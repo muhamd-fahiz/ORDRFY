@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # `supabase start` brings up the full local stack (Postgres 17 + Auth + Vault +
+      # pg_cron + pg_net + PostgREST, ...) via Docker Compose -- Docker is preinstalled on
+      # GitHub-hosted ubuntu runners, no extra setup needed. `supabase db reset` then
+      # deterministically replays every migration in supabase/migrations, in order, followed
+      # by supabase/seed.sql ([db.seed].enabled = true in config.toml) -- the same two
+      # commands a developer runs locally, so CI can never silently diverge from local dev.
+      - name: Start local Supabase stack
+        run: supabase start
+
+      - name: Apply all migrations and load seed.sql
+        run: supabase db reset
+
+      # Exports this run's actual local keys/URLs (ANON_KEY, SERVICE_ROLE_KEY, DB_URL, ...)
+      # as env vars for later steps -- never hardcoded, since `supabase start` can rotate
+      # them across CLI versions. These are Supabase's well-known local-only demo
+      # credentials (same fixed values for every local project), not real secrets.
+      - name: Export local Supabase connection details
+        run: |
+          eval "$(supabase status -o env | sed 's/^/export /')"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "DB_URL=$DB_URL"
+          } >> "$GITHUB_ENV"
+
+      # tests/sql/*.sql: RLS tenant-isolation, the pipeline-stage guard trigger, the
+      # reminder_channel_consent append-only guard, the reminder template category guard,
+      # and the Vault credential permission boundary -- each file wraps its own fixtures in
+      # BEGIN/ROLLBACK, so nothing here persists into the seeded data other tests rely on.
+      - name: Run RLS / trigger / guard SQL tests
+        run: npm run test:sql
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          WHATSAPP_PROVIDER: mock
+          INSTAGRAM_PROVIDER: mock
+          PAYMENT_PROVIDER: mock
+          CRON_INTERNAL_SECRET: ci-placeholder-secret-not-used-for-real-auth
