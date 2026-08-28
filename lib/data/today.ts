@@ -1,5 +1,5 @@
-import { createServiceRoleClient } from "@/lib/db/server";
-import type { VerticalKey } from "@/lib/design/verticals";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/db/database.types";
 
 const MAX_CONTACTS = 10;
 
@@ -13,50 +13,23 @@ export interface TodayViewContact {
 }
 
 export interface TodayViewData {
-  businessId: string;
-  businessName: string;
-  vertical: VerticalKey;
   unresolvedAttentionCount: number;
   contacts: TodayViewContact[];
 }
 
-export interface BusinessOption {
-  id: string;
-  name: string;
-  vertical: VerticalKey;
-}
-
 /**
- * Reads via the service-role client, bypassing RLS -- a deliberate, temporary choice for
- * this preview-only route. There is no owner-login flow yet (CLAUDE.md known blocker #10:
- * "Admin owner-account creation/invite flow is not built"), so there is no real
- * authenticated business-owner session for an RLS-scoped client to run under. Once that
- * exists, this must be rewritten against createRlsClient() -- reading arbitrary businesses'
- * data via service-role is never acceptable in the real owner-facing app.
+ * Reads through an RLS-scoped client (createRlsClient()) -- every query below is naturally
+ * confined to the caller's own business via the tenant-isolation policies on contacts/
+ * messages/owner_attention_queue (business_id in (select business_id from
+ * business_memberships where user_id = auth.uid())), so businessId is only needed to filter
+ * within that already-narrowed row set, never to widen it. This replaces an earlier version
+ * that read via the service-role client because there was no owner session to scope to yet
+ * (see git history) -- do not go back to that pattern now that one exists.
  */
-export async function listBusinessOptions(): Promise<BusinessOption[]> {
-  const supabase = createServiceRoleClient();
-  const { data, error } = await supabase
-    .from("businesses")
-    .select("id, name, vertical")
-    .is("deleted_at", null)
-    .order("name");
-  if (error) throw new Error(`Failed to list businesses: ${error.message}`);
-  return (data ?? []) as BusinessOption[];
-}
-
-export async function getTodayViewData(businessId: string): Promise<TodayViewData | null> {
-  const supabase = createServiceRoleClient();
-
-  const { data: business, error: businessError } = await supabase
-    .from("businesses")
-    .select("id, name, vertical")
-    .eq("id", businessId)
-    .is("deleted_at", null)
-    .maybeSingle();
-  if (businessError) throw new Error(`Failed to load business: ${businessError.message}`);
-  if (!business) return null;
-
+export async function getTodayViewData(
+  supabase: SupabaseClient<Database>,
+  businessId: string,
+): Promise<TodayViewData> {
   const { count: unresolvedAttentionCount, error: attentionCountError } = await supabase
     .from("owner_attention_queue")
     .select("id", { count: "exact", head: true })
@@ -93,8 +66,6 @@ export async function getTodayViewData(businessId: string): Promise<TodayViewDat
   if (messagesError) throw new Error(`Failed to load messages: ${messagesError.message}`);
   if (attentionRowsError) throw new Error(`Failed to load attention rows: ${attentionRowsError.message}`);
 
-  // Latest inbound message per contact -- messages is ordered created_at desc above, so the
-  // first occurrence per contact_id wins.
   const latestMessageByContact = new Map<string, { content: string | null; created_at: string }>();
   for (const m of lastMessages ?? []) {
     if (!latestMessageByContact.has(m.contact_id)) latestMessageByContact.set(m.contact_id, m);
@@ -103,9 +74,6 @@ export async function getTodayViewData(businessId: string): Promise<TodayViewDat
   const attentionContactIds = new Set((attentionRows ?? []).map((r) => r.contact_id as string));
 
   return {
-    businessId: business.id,
-    businessName: business.name,
-    vertical: business.vertical as VerticalKey,
     unresolvedAttentionCount: unresolvedAttentionCount ?? 0,
     contacts: (contacts ?? []).map((c) => {
       const lastMessage = latestMessageByContact.get(c.id);

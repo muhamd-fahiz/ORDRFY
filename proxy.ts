@@ -4,8 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 /**
- * Refreshes the Supabase auth session cookie on every /admin request. Required by
- * @supabase/ssr's Next.js pattern -- without this, a Server Component's session can go
+ * Refreshes the Supabase auth session cookie on every /admin and /app request (the admin
+ * panel and the owner app -- two separate session types, same refresh mechanics). Required
+ * by @supabase/ssr's Next.js pattern -- without this, a Server Component's session can go
  * stale mid-visit since Server Components can't themselves write cookies.
  */
 export async function proxy(request: NextRequest) {
@@ -36,5 +37,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/app/:path*"],
 };

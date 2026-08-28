@@ -1,0 +1,54 @@
+import { requireReadyOwnerSession } from "@/lib/auth/owner-guard";
+import { createRlsClient } from "@/lib/db/server";
+import { getTodayViewData } from "@/lib/data/today";
+import { formatRelativeTime } from "@/lib/design/format-time";
+import { AttentionBanner } from "@/components/ui/AttentionBanner";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { ContactCard } from "@/components/ui/ContactCard";
+import { VerticalBadge } from "@/components/ui/VerticalBadge";
+import type { VerticalKey } from "@/lib/design/verticals";
+
+export default async function TodayPage() {
+  const session = await requireReadyOwnerSession();
+  const supabase = await createRlsClient();
+  const today = await getTodayViewData(supabase, session.businessId);
+
+  return (
+    <div className="mx-auto max-w-sm px-4 py-6">
+      <div className="mb-3 flex items-center justify-between">
+        <VerticalBadge vertical={session.vertical as VerticalKey} variant="icon" />
+      </div>
+      <h1 className="mb-2 font-app text-xs font-semibold uppercase tracking-wide text-ink-40">Today</h1>
+
+      {today.unresolvedAttentionCount > 0 && (
+        <div className="mb-3">
+          <AttentionBanner count={today.unresolvedAttentionCount} />
+        </div>
+      )}
+
+      {today.contacts.length === 0 ? (
+        <p className="font-app text-sm text-ink-70">No contacts yet.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {today.contacts.map((contact) => (
+            <ContactCard
+              key={contact.id}
+              name={contact.name}
+              timeLabel={formatRelativeTime(contact.lastMessageAt)}
+              message={contact.lastMessage}
+              stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No stage set"}</Chip>}
+              action={
+                contact.hasUnresolvedAttention ? (
+                  <Button variant="secondary" size="sm">
+                    Review
+                  </Button>
+                ) : undefined
+              }
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

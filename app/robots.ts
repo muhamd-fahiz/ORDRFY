@@ -15,11 +15,11 @@ import { headers } from "next/headers";
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const host = (await headers()).get("host") ?? "";
 
-  if (host.startsWith("admin.")) {
+  if (host.startsWith("admin.") || host.startsWith("app.")) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
 
   return {
-    rules: { userAgent: "*", disallow: "/admin" },
+    rules: { userAgent: "*", disallow: ["/admin", "/app"] },
   };
 }

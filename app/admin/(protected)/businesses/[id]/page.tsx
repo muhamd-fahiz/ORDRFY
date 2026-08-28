@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/db/server";
+import { CreateOwnerForm } from "./create-owner-form";
 
 export default async function BusinessDetailPage({
   params,
@@ -38,6 +39,15 @@ export default async function BusinessDetailPage({
     .from("business_memberships")
     .select("user_id, role, created_at")
     .eq("business_id", id);
+
+  // business_memberships only stores user_id -- look up each member's email for display via
+  // the admin auth API (service-role only; never exposed to a non-admin caller).
+  const membershipsWithEmail = await Promise.all(
+    (memberships ?? []).map(async (m) => {
+      const { data } = await supabase.auth.admin.getUserById(m.user_id);
+      return { ...m, email: data.user?.email ?? "(unknown)" };
+    }),
+  );
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
@@ -119,16 +129,16 @@ export default async function BusinessDetailPage({
 
       <section>
         <h2 className="mb-2 text-sm font-medium text-neutral-500">Owner Members</h2>
-        {!memberships || memberships.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            No owner account created yet. (Owner account creation/invite flow is not built in this
-            skeleton pass.)
-          </p>
+        {membershipsWithEmail.length === 0 ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-neutral-500">No owner account created yet.</p>
+            <CreateOwnerForm businessId={id} defaultEmail={business.email ?? ""} />
+          </div>
         ) : (
           <ul className="text-sm">
-            {memberships.map((m) => (
+            {membershipsWithEmail.map((m) => (
               <li key={m.user_id}>
-                {m.user_id} — {m.role}
+                {m.email} — {m.role}
               </li>
             ))}
           </ul>
