@@ -6,11 +6,12 @@ interface ContactCardProps {
   timeLabel: string;
   message: string;
   stageChip: ReactNode;
-  action: ReactNode;
+  /** Omit when there's nothing for the owner to do right now -- don't invent a fake action. */
+  action?: ReactNode;
 }
 
 // The single-tap unit of the owner app: one contact, their last message, their pipeline
-// stage, and exactly one action. Deliberately has no data-fetching or business logic --
+// stage, and at most one action. Deliberately has no data-fetching or business logic --
 // callers decide what "the" action is (send reminder, mark paid, ...) per pipeline_stage.
 export function ContactCard({ name, timeLabel, message, stageChip, action }: ContactCardProps) {
   return (
