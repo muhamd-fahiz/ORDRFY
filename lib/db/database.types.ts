@@ -1226,6 +1226,30 @@ export type Database = {
       }
     }
     Functions: {
+      claim_next_reminder: {
+        Args: never
+        Returns: {
+          attempt_count: number
+          business_id: string
+          channel_id: string
+          contact_id: string
+          created_at: string
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          locked_at: string | null
+          message_template_id: string | null
+          reminder_type: string
+          scheduled_time_utc: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reminders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_provider_credential: {
         Args: { p_secret_id: string }
         Returns: undefined
@@ -1233,6 +1257,12 @@ export type Database = {
       get_provider_credential: {
         Args: { p_secret_id: string }
         Returns: string
+      }
+      get_secret_id_by_name: { Args: { p_name: string }; Returns: string }
+      record_reminder_engine_heartbeat: { Args: never; Returns: undefined }
+      recover_stuck_reminders: {
+        Args: { p_timeout_minutes?: number }
+        Returns: number
       }
       store_provider_credential: {
         Args: { p_description?: string; p_name: string; p_secret: string }

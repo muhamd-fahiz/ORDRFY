@@ -54,6 +54,24 @@ begin
 end;
 $$;
 
+-- Lookup by name, not just by id -- needed by scripts/setup-cron-secrets.mjs to decide
+-- whether to create vs. update a named secret (e.g. 'cron_reminder_endpoint_url') without
+-- already knowing its id. Reads only vault.secrets' plaintext name/id columns, never
+-- vault.decrypted_secrets -- this function does not decrypt anything.
+create or replace function get_secret_id_by_name(p_name text)
+returns uuid
+security definer
+set search_path = public, vault
+language plpgsql
+as $$
+declare
+  v_id uuid;
+begin
+  select id into v_id from vault.secrets where name = p_name;
+  return v_id;
+end;
+$$;
+
 create or replace function delete_provider_credential(p_secret_id uuid)
 returns void
 security definer
@@ -78,11 +96,13 @@ revoke execute on function store_provider_credential(text, text, text) from publ
 revoke execute on function get_provider_credential(uuid) from public, anon, authenticated;
 revoke execute on function update_provider_credential(uuid, text) from public, anon, authenticated;
 revoke execute on function delete_provider_credential(uuid) from public, anon, authenticated;
+revoke execute on function get_secret_id_by_name(text) from public, anon, authenticated;
 
 grant execute on function store_provider_credential(text, text, text) to service_role;
 grant execute on function get_provider_credential(uuid) to service_role;
 grant execute on function update_provider_credential(uuid, text) to service_role;
 grant execute on function delete_provider_credential(uuid) to service_role;
+grant execute on function get_secret_id_by_name(text) to service_role;
 
 comment on function get_provider_credential(uuid) is
   'The only sanctioned way to resolve business_channel_connections.credentials_ref back to '
