@@ -20,6 +20,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   }
 
   return {
-    rules: { userAgent: "*", disallow: ["/admin", "/app"] },
+    rules: { userAgent: "*", disallow: ["/admin", "/app", "/design-preview"] },
   };
 }
