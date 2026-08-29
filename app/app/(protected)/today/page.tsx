@@ -3,11 +3,11 @@ import { createRlsClient } from "@/lib/db/server";
 import { getTodayViewData } from "@/lib/data/today";
 import { formatRelativeTime } from "@/lib/design/format-time";
 import { AttentionBanner } from "@/components/ui/AttentionBanner";
-import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { ContactCard } from "@/components/ui/ContactCard";
 import { VerticalBadge } from "@/components/ui/VerticalBadge";
 import type { VerticalKey } from "@/lib/design/verticals";
+import { ContactActions } from "./contact-actions";
 
 export default async function TodayPage() {
   const session = await requireReadyOwnerSession();
@@ -39,11 +39,7 @@ export default async function TodayPage() {
               message={contact.lastMessage}
               stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No stage set"}</Chip>}
               action={
-                contact.hasUnresolvedAttention ? (
-                  <Button variant="secondary" size="sm">
-                    Review
-                  </Button>
-                ) : undefined
+                <ContactActions contactId={contact.id} hasUnresolvedAttention={contact.hasUnresolvedAttention} />
               }
             />
           ))}

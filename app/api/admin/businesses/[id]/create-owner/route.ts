@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { requireReadyAdminSession } from "@/lib/auth/admin-guard";
+import { getAdminSessionState } from "@/lib/auth/admin-guard";
 import { createServiceRoleClient } from "@/lib/db/server";
 
 /**
@@ -17,7 +17,16 @@ import { createServiceRoleClient } from "@/lib/db/server";
  * being WhatsApp-first, not necessarily email-checking.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireReadyAdminSession();
+  // requireReadyAdminSession() calls next/navigation's redirect(), which is correct for a
+  // page but not a route handler: fetch() transparently follows the resulting 307 rather
+  // than surfacing a clean error, so a signed-out client-side caller here would try to
+  // JSON-parse the login page's HTML and throw on that instead of seeing a 401. Route
+  // handlers under app/api/ check the non-redirecting state directly instead.
+  const state = await getAdminSessionState();
+  if (state.status !== "ready") {
+    return NextResponse.json({ error: "Not signed in as an admin." }, { status: 401 });
+  }
+  const session = state;
   const { id: businessId } = await params;
 
   const { email } = (await request.json()) as { email?: string };

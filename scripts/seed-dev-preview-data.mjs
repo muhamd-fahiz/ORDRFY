@@ -5,6 +5,16 @@
 // including in CI. This script is safe to re-run: it deletes its own previously-seeded rows
 // (matched by a fixed, deterministic id prefix) before recreating them.
 //
+// GOTCHA (found the hard way, 2026-08-29): re-running this DELETEs and recreates the
+// businesses rows below. business_memberships.business_id is ON DELETE CASCADE, so any
+// owner account created against one of these businesses (via the admin panel's "Create
+// owner account") silently loses its membership row -- the auth.users row survives, the
+// business_memberships link does not. If you've created a real owner login against these
+// fixture businesses for testing, re-run this script BEFORE recreating that login, or
+// re-insert the membership row manually afterward:
+//   insert into business_memberships (user_id, business_id, role)
+//   select id, '<business-id>', 'owner' from auth.users where email = '<owner-email>';
+//
 // Usage: node scripts/seed-dev-preview-data.mjs
 
 import { createClient } from "@supabase/supabase-js";
