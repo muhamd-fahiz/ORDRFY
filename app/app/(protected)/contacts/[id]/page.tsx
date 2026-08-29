@@ -28,8 +28,8 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto max-w-sm px-4 py-6">
-      <Link href="/app/today" className="mb-4 inline-block font-app text-xs text-ink-40 underline">
-        &larr; Today
+      <Link href="/app/contacts" className="mb-4 inline-block font-app text-xs text-ink-40 underline">
+        &larr; Contacts
       </Link>
       <h1 className="mb-6 font-display text-xl font-bold text-ink">{contact.name}</h1>
 
