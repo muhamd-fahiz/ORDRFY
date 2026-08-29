@@ -3,18 +3,8 @@ import { notFound } from "next/navigation";
 import { requireReadyOwnerSession } from "@/lib/auth/owner-guard";
 import { createRlsClient } from "@/lib/db/server";
 import { getContactDetail } from "@/lib/data/contact-detail";
-import { Chip } from "@/components/ui/Chip";
+import { PaymentCard } from "@/components/ui/PaymentCard";
 import { StageChanger } from "./stage-changer";
-
-const PAYMENT_STATUS_TONE = {
-  paid: "confirmed",
-  overdue: "attention",
-  pending: "neutral",
-} as const;
-
-function formatRupees(amount: number): string {
-  return `₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
 
 export default async function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireReadyOwnerSession();
@@ -63,20 +53,14 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
         ) : (
           <div className="flex flex-col gap-2">
             {contact.payments.map((payment) => (
-              <div key={payment.id} className="rounded-lg border border-ink-15 bg-paper-raised p-3">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="font-data text-xs text-ink-40">{payment.orderReference ?? "—"}</span>
-                  <Chip tone={PAYMENT_STATUS_TONE[payment.status as keyof typeof PAYMENT_STATUS_TONE] ?? "neutral"}>
-                    {payment.status}
-                  </Chip>
-                </div>
-                <div className="flex items-baseline justify-between font-data">
-                  <span className="text-sm text-ink">
-                    {formatRupees(payment.amountPaid)} <span className="text-ink-40">of {formatRupees(payment.amountDue)}</span>
-                  </span>
-                  {payment.dueDate && <span className="text-xs text-ink-40">due {payment.dueDate}</span>}
-                </div>
-              </div>
+              <PaymentCard
+                key={payment.id}
+                orderReference={payment.orderReference}
+                amountDue={payment.amountDue}
+                amountPaid={payment.amountPaid}
+                status={payment.status}
+                dueDate={payment.dueDate}
+              />
             ))}
           </div>
         )}
