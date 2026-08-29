@@ -5,15 +5,15 @@
 // including in CI. This script is safe to re-run: it deletes its own previously-seeded rows
 // (matched by a fixed, deterministic id prefix) before recreating them.
 //
-// GOTCHA (found the hard way, 2026-08-29): re-running this DELETEs and recreates the
-// businesses rows below. business_memberships.business_id is ON DELETE CASCADE, so any
-// owner account created against one of these businesses (via the admin panel's "Create
-// owner account") silently loses its membership row -- the auth.users row survives, the
-// business_memberships link does not. If you've created a real owner login against these
-// fixture businesses for testing, re-run this script BEFORE recreating that login, or
-// re-insert the membership row manually afterward:
-//   insert into business_memberships (user_id, business_id, role)
-//   select id, '<business-id>', 'owner' from auth.users where email = '<owner-email>';
+// GOTCHA (found the hard way, 2026-08-28, now handled automatically): re-running this
+// DELETEs and recreates the businesses rows below. business_memberships.business_id is ON
+// DELETE CASCADE, so any owner account created against one of these businesses (via the
+// admin panel's "Create owner account") silently loses its membership row -- the auth.users
+// row survives, the business_memberships link does not. The script now restores membership
+// automatically for the two known dev-preview owner emails (see KNOWN_OWNERS below) after
+// recreating the businesses, so this is no longer something to remember to fix by hand --
+// but it's still worth knowing about if you create an owner account under a *different*
+// email against these fixture businesses, since that one isn't in KNOWN_OWNERS.
 //
 // Usage: node scripts/seed-dev-preview-data.mjs
 
@@ -75,9 +75,13 @@ async function main() {
   if (bizError) throw new Error(`Failed to insert businesses: ${bizError.message}`);
 
   async function addContact(businessId, vertical, stageKey, name, phone, messageText, messageAgo, attentionReason) {
+    // last_inbound_at is set on both contacts and contact_channel_identities, matching the
+    // real inbound-message code path (lib/engine/contact-resolution.ts) now that it does the
+    // same -- keeping this fixture consistent with production behavior rather than
+    // reproducing the staleness bug that behavior used to have.
     const { data: contact, error: contactError } = await supabase
       .from("contacts")
-      .insert({ business_id: businessId, name, pipeline_stage_id: stageId(vertical, stageKey) })
+      .insert({ business_id: businessId, name, pipeline_stage_id: stageId(vertical, stageKey), last_inbound_at: messageAgo })
       .select("id")
       .single();
     if (contactError) throw new Error(`Failed to insert contact ${name}: ${contactError.message}`);
@@ -201,6 +205,26 @@ async function main() {
   const fatimaId = await addContact(BIZ_SERVICE, "service", "confirmed", "Fatima", "+919993330001", "See you at 4pm!", hoursAgo(5), null);
   await addContact(BIZ_SERVICE, "service", "inquiry", "Zoya", "+919993330002", "Do you have any evening slots this week?", hoursAgo(30), null);
   await addPayment(BIZ_SERVICE, fatimaId, "Fatima", { orderReference: "ORD-3001", amountDue: 500, amountPaid: 500, status: "paid", dueDaysFromNow: -5 });
+
+  // Auto-restore any owner accounts created against these fixture businesses -- the
+  // cascade-delete gotcha documented at the top of this file is real, but re-fixing it by
+  // hand every time this script runs is exactly the kind of avoidable friction worth
+  // eliminating rather than re-explaining. Safe no-op for anyone who hasn't created these.
+  console.log("Restoring known dev-preview owner accounts, if they exist...");
+  const KNOWN_OWNERS = [
+    { email: "meera.owner@example.com", businessId: BIZ_FASHION },
+    { email: "sweetcrumb.owner@example.com", businessId: BIZ_BAKER },
+  ];
+  for (const { email, businessId } of KNOWN_OWNERS) {
+    const { data: user } = await supabase.auth.admin.listUsers();
+    const match = user?.users.find((u) => u.email === email);
+    if (!match) continue;
+    const { error } = await supabase
+      .from("business_memberships")
+      .upsert({ user_id: match.id, business_id: businessId, role: "owner" }, { onConflict: "user_id,business_id" });
+    if (error) throw new Error(`Failed to restore membership for ${email}: ${error.message}`);
+    console.log(`Restored membership: ${email} -> ${businessId}`);
+  }
 
   console.log("Done. Business ids:");
   console.log({ BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE });

@@ -42,10 +42,17 @@ export async function resolveOrCreateContact(
   if (lookupError) throw new Error(`Contact identity lookup failed: ${lookupError.message}`);
 
   if (existingIdentity) {
-    await supabase
-      .from("contact_channel_identities")
-      .update({ last_inbound_at: new Date().toISOString() })
-      .eq("id", existingIdentity.id);
+    const now = new Date().toISOString();
+    // Both the identity's own last_inbound_at (the reminder engine's per-channel Instagram
+    // window check reads this one) AND the contact's last_inbound_at (Today/Contacts List
+    // sort by this one) must move forward on every inbound message, not just the contact's
+    // first ever one -- found by testing: a contact who messaged again after their first
+    // message stayed pinned at their original timestamp forever, silently breaking "most
+    // recently active first" for any returning contact.
+    await Promise.all([
+      supabase.from("contact_channel_identities").update({ last_inbound_at: now }).eq("id", existingIdentity.id),
+      supabase.from("contacts").update({ last_inbound_at: now }).eq("id", existingIdentity.contact_id),
+    ]);
     return { contactId: existingIdentity.contact_id, identityId: existingIdentity.id, isNewContact: false };
   }
 
