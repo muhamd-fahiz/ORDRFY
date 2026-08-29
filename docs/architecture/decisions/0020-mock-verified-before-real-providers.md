@@ -55,3 +55,15 @@ corresponding engineering work is deliberately last — these are independent, n
 sequenced against each other. `docs/decisions-register.md`'s timeline-re-estimate item is
 directly informed by this reordering: "weeks until launch" now depends on finishing the
 mock-verified full product, not on when real provider work starts.
+
+## Notes
+
+**Response-timing/latency simulation, decided 2026-08-29: deferred to Phase 6, not
+approximated now.** The mocks respond synchronously with no artificial network delay,
+unlike real WhatsApp/Instagram send calls and Meta's webhook redelivery semantics.
+Confirmed this doesn't undermine the mock-fidelity bar above: the reminder engine's
+retry/backoff logic (`lib/engine/reminders.ts`) operates on logical state
+(`attempt_count`, `scheduled_time_utc`), never on the wall-clock duration of the
+underlying send call, so timing fidelity isn't load-bearing for anything built against the
+mocks before Phase 6. Explicit call made to test real timing against the real API directly
+at Phase 6 rather than build an approximation now that might not even be accurate.
