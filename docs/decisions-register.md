@@ -9,6 +9,7 @@ at once.
 |---|---|---|---|
 | Open | Instagram messaging cost model — unresearched | Locking `business_entitlements` pricing *amounts* (schema is unaffected) | 2026-08-28 |
 | Open | Timeline for the 5×2 scope — see finding below, needs the project owner's preference on how to track it | Nothing technical; blocks having an honest way to talk about "how much is left" | 2026-08-28 |
+| Open | `business_settings` keys beyond `trial_grace_period_days` (`payment_reminder_delay_days`, `follow_up_silence_hours`, `instant_ack_enabled`/`instant_ack_text`, `notification_digest_frequency_minutes`) are documented in CLAUDE.md as owner-editable but have zero consuming code anywhere in the shared engine — found while scoping the owner-app Settings screen, which shipped scoped to real `businesses` profile fields only (name/phone/email/timezone/preferred_language) instead. Needs the project owner's call on when/whether to wire the actual engine behavior these keys are supposed to control. | The owner-app Settings screen's scope (currently profile-only); reminder timing/instant-ack/digest features stay unbuilt until this is resolved either way | 2026-08-30 |
 
 ## Resolved
 
@@ -32,8 +33,6 @@ engineering pace (known blocker #1).
 
 Still open: whether the project owner wants a hard number produced anyway, accepting the
 caveats above, or accepts this scope-based tracking instead.
-
-## How this differs from `docs/architecture/decisions/`
 
 ## How this differs from `docs/architecture/decisions/`
 

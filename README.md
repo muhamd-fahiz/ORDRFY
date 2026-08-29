@@ -77,12 +77,15 @@ Verified means actually tested against the live local stack — real browser ses
   the admin panel too —
   [ADR-0021](./docs/architecture/decisions/0021-carbon-pink-extended-to-admin-panel.md)), a
   small component library (`components/ui/`), real screens (Today, Contacts List, Contact
-  Detail, Needs Attention, Payments) with real mutations (stage changes, "Review"/"Send
-  Reminder", Mark as Paid — [ADR-0019](./docs/architecture/decisions/0019-today-view-mutation-design.md))
+  Detail, Needs Attention, Payments, Settings) with real mutations (stage changes, "Review"/
+  "Send Reminder", Mark as Paid, business-profile edits —
+  [ADR-0019](./docs/architecture/decisions/0019-today-view-mutation-design.md))
 - ✅ **CI** — every push runs the full local Supabase stack, RLS/trigger SQL tests, unit
   tests, typecheck, lint, and build (`.github/workflows/ci.yml`)
-- ⬜ **Owner app, remaining screens** — Today, Contacts List, Contact Detail, Needs
-  Attention, and Payments exist; settings and any remaining workflows are still ahead
+- ⬜ **Owner app, remaining workflows** — all core screens exist now; Settings is
+  deliberately scoped to real `businesses` profile fields only, since the other documented
+  `business_settings` keys (reminder timing, instant-ack, digest frequency) have no engine
+  consumer yet — see `docs/decisions-register.md`
 - ⬜ **Launch acceptance, mock-verified** — all 10 vertical×channel combinations tested
   end-to-end against the mock providers, deliberately *before* any real provider work
   ([ADR-0020](./docs/architecture/decisions/0020-mock-verified-before-real-providers.md))

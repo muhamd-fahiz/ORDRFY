@@ -31,10 +31,21 @@ through `createRlsClient()` — every query is naturally scoped to the signed-in
 business via Postgres RLS, never widened by application code.
 
 - `app/login/` — sign-in.
-- `app/(protected)/today/` — the one real screen built so far. Real data
-  (contacts/pipeline-stage/`owner_attention_queue`), real mutations ("Review" resolves
-  attention items, "Send Reminder" calls the actual Phase 2 reminder engine) — see
-  [ADR-0019](../docs/architecture/decisions/0019-today-view-mutation-design.md).
+- `app/(protected)/today/` — real data (contacts/pipeline-stage/`owner_attention_queue`),
+  real mutations ("Review" resolves attention items, "Send Reminder" calls the actual Phase 2
+  reminder engine) — see [ADR-0019](../docs/architecture/decisions/0019-today-view-mutation-design.md).
+  Capped at `MAX_CONTACTS` most-recently-active contacts; `app/(protected)/attention/` exists
+  specifically because that cap can hide an old unresolved item the count badge still counts.
+- `app/(protected)/contacts/`, `app/(protected)/contacts/[id]/` — the full roster
+  (stage-filterable) and per-contact detail (vertical fields, payments, pipeline stage
+  changes via `stage-changer.tsx`).
+- `app/(protected)/payments/` — business-wide payment list, status-filterable, with a
+  Mark as Paid manual-reconciliation action (never automated billing — see CLAUDE.md's V1 scope).
+- `app/(protected)/settings/` — owner-editable `businesses` profile fields (name/phone/
+  email/timezone/preferred_language) only. Deliberately does **not** expose the other
+  `business_settings` keys CLAUDE.md documents (reminder timing, instant-ack, digest
+  frequency) — none of them have any consuming code in the shared engine yet, so a control
+  for them would have no real effect. See `docs/decisions-register.md`.
 
 ### `design-preview/` — component-library showcase, not a real screen
 Static demo content, no data fetching. Useful for checking a component in isolation; not
@@ -48,6 +59,11 @@ part of the product.
 - `admin/businesses/[id]/create-owner/` — provisions an owner account (ADR-0017).
 - `app/attention/resolve/`, `app/reminders/send-now/` — the Today view's real mutations
   (ADR-0019).
+- `app/contacts/[id]/stage/` — pipeline stage changes, guarded by the `guard_contact_pipeline_stage` trigger as a second, independent layer beyond RLS.
+- `app/payments/[id]/mark-paid/` — manual payment reconciliation (never automated billing).
+- `app/settings/` — owner business-profile edits (see `app/(protected)/settings/` above);
+  the only mutation route here that never takes a target id — it always writes the caller's
+  own `businessId` from the session, so there's no cross-tenant id to guard against.
 - `cron/reminders/` — the scheduled reminder-engine tick, invoked by `pg_cron`/`pg_net`
   with a shared secret (`CRON_INTERNAL_SECRET`).
 - `webhooks/whatsapp/`, `webhooks/instagram/` — inbound message intake. Verify signature →
