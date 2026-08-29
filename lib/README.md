@@ -63,8 +63,18 @@ Every file here is channel- and vertical-agnostic by construction:
 folder is the only place a caller should ever obtain one (`WHATSAPP_PROVIDER`/
 `INSTAGRAM_PROVIDER`/`PAYMENT_PROVIDER` env vars select mock vs. real). Only mock
 implementations exist today — `MockWhatsAppProvider`, `MockInstagramProvider`,
-`MockPaymentProvider`. A real `InteraktAdapter`/`InstagramProvider` is Build Phase 4 and
-must satisfy the same interface with zero changes to any caller.
+`MockPaymentProvider`. A real `InteraktAdapter`/`InstagramProvider` is Build Phase 6 (last,
+per [ADR-0020](../docs/architecture/decisions/0020-mock-verified-before-real-providers.md))
+and must satisfy the same interface with zero changes to any caller.
+
+**Mock fidelity is not optional.** Per ADR-0020, the full product won't be validated
+against real WhatsApp/Instagram behavior until Build Phase 6 — everything built against
+these mocks before then (every owner-app screen, all 10 vertical×channel combinations) is
+only as trustworthy as the mocks are faithful to the real APIs' actually-documented
+behavior: payload shapes, webhook formats, response timing. "Good enough to make the
+current screen work" is not the bar. If a mock's behavior relative to real documented
+behavior is ever unclear, check the real docs (or ask) rather than guess — a fidelity gap
+should never be discovered for the first time during Phase 6.
 
 ## `secrets/`
 

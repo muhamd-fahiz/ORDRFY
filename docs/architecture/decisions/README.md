@@ -28,6 +28,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0017](0017-owner-authentication-model.md) | Owner authentication model — admin-provisioned accounts, no mandatory MFA | Accepted |
 | [0018](0018-route-handler-session-checks.md) | Route handlers check session state directly, never call the redirect-based guard | Accepted |
 | [0019](0019-today-view-mutation-design.md) | Today-view mutation design — "Review" semantics and send-reminder idempotency | Accepted |
+| [0020](0020-mock-verified-before-real-providers.md) | Full product built and verified against mocks before any real provider integration | Accepted |
 
 ## Migration note
 

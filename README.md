@@ -79,12 +79,18 @@ Verified means actually tested against the live local stack — real browser ses
   [ADR-0019](./docs/architecture/decisions/0019-today-view-mutation-design.md))
 - ✅ **CI** — every push runs the full local Supabase stack, RLS/trigger SQL tests, unit
   tests, typecheck, lint, and build (`.github/workflows/ci.yml`)
-- ⬜ **Real provider integration** — Interakt (WhatsApp), Instagram Graph API — still mock
-  providers only (`WHATSAPP_PROVIDER=mock`, `INSTAGRAM_PROVIDER=mock`,
-  `PAYMENT_PROVIDER=mock` in `.env.example`); nothing touches a real WhatsApp number, a real
-  Instagram account, or real money yet
+- ⬜ **Owner app, remaining screens** — Today is the only real screen so far; contacts,
+  payments, and other workflows are still ahead
+- ⬜ **Launch acceptance, mock-verified** — all 10 vertical×channel combinations tested
+  end-to-end against the mock providers, deliberately *before* any real provider work
+  ([ADR-0020](./docs/architecture/decisions/0020-mock-verified-before-real-providers.md))
 - ⬜ **Security hardening pass** — full automated test suite from the Hardening Addendum
-- ⬜ **Launch acceptance** — all 10 vertical×channel combinations tested end-to-end
+- ⬜ **Real provider integration, deliberately last** — Interakt (WhatsApp), Instagram
+  Graph API — still mock providers only (`WHATSAPP_PROVIDER=mock`,
+  `INSTAGRAM_PROVIDER=mock`, `PAYMENT_PROVIDER=mock` in `.env.example`); nothing touches a
+  real WhatsApp number, a real Instagram account, or real money yet. Meta Business/Instagram
+  verification is running in parallel now regardless, since its review timeline is external
+  and unpredictable.
 
-Three open decisions are tracked in
+Two open decisions are tracked in
 [docs/decisions-register.md](./docs/decisions-register.md), not silently assumed either way.

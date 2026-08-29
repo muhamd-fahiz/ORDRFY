@@ -8,8 +8,32 @@ at once.
 | Status | Decision needed | Blocks | Opened |
 |---|---|---|---|
 | Open | Instagram messaging cost model — unresearched | Locking `business_entitlements` pricing *amounts* (schema is unaffected) | 2026-08-28 |
-| Open | Confirm local Supabase stack ports (54321/54322/54323/54324) don't collide with anything else on this machine | Nothing today; blocks changing `supabase/config.toml`'s ports without risk of a silent conflict later | 2026-08-28 |
-| Open | Re-estimate the 26–34 week timeline for the 5×2 (vertical×channel) scope — never redone after the 3→5 vertical expansion | Nothing technical; blocks having an honest current timeline to plan against | 2026-08-28 |
+| Open | Timeline for the 5×2 scope — see finding below, needs the project owner's preference on how to track it | Nothing technical; blocks having an honest way to talk about "how much is left" | 2026-08-28 |
+
+## Resolved
+
+- **Supabase stack port collision with ASSETMIND360** (opened 2026-08-28, resolved 2026-08-29): checked directly — only Docker's own relay processes hold ports 54321-54324/54327 right now, no collision. See CLAUDE.md known-blocker #9 for the residual-risk caveat (ASSETMIND360 wasn't running at check time, so this isn't airtight against every possible future overlap, just confirms no *current* conflict).
+
+## Finding: the 26–34 week estimate doesn't rescale to this build model
+
+The original estimate assumed a conventional engineering team's pace. Actual commit history
+for Foundation + Shared Engine + all 5 verticals' content + CI + owner authentication + the
+first owner-app screen spans about two calendar days of session work (2026-08-28 21:18 to
+2026-08-29 14:35) — a pace a person-week-based formula can't meaningfully describe, so
+scaling "26-34 weeks" up for 5 verticals instead of 3 would just be scaling the wrong
+premise, not producing an honest number.
+
+**Proposed alternative**: track remaining scope via the root README's status checklist and
+the 10-combination launch-acceptance matrix (ADR-0020) rather than a calendar estimate —
+both are concrete and falsifiable ("is this checked off or not"), where a week-count would
+just be a guess dressed up as a number. Real provider integration's timing additionally
+depends on Meta's review process, which is external and unpredictable regardless of
+engineering pace (known blocker #1).
+
+Still open: whether the project owner wants a hard number produced anyway, accepting the
+caveats above, or accepts this scope-based tracking instead.
+
+## How this differs from `docs/architecture/decisions/`
 
 ## How this differs from `docs/architecture/decisions/`
 
