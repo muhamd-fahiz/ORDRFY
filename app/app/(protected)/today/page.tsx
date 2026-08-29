@@ -35,6 +35,7 @@ export default async function TodayPage() {
             <ContactCard
               key={contact.id}
               name={contact.name}
+              href={`/app/contacts/${contact.id}`}
               timeLabel={formatRelativeTime(contact.lastMessageAt)}
               message={contact.lastMessage}
               stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No stage set"}</Chip>}

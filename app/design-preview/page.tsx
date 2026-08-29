@@ -32,6 +32,7 @@ export default function DesignPreviewPage() {
         <div className="flex flex-col gap-2">
           <ContactCard
             name="Priya K."
+            href="/app/contacts/example"
             timeLabel="2d ago"
             message={'"Is the blue kurta ready yet?"'}
             stageChip={<Chip tone="neutral">New Inquiry</Chip>}

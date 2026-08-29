@@ -48,6 +48,8 @@ async function main() {
   for (const id of [BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE]) {
     await supabase.from("webhook_events").delete().eq("business_id", id);
     await supabase.from("owner_attention_queue").delete().eq("business_id", id);
+    await supabase.from("payments").delete().eq("business_id", id);
+    await supabase.from("order_field_values").delete().eq("business_id", id);
     await supabase.from("messages").delete().eq("business_id", id);
     await supabase.from("reminders").delete().eq("business_id", id);
     await supabase.from("contact_channel_identities").delete().eq("business_id", id);
@@ -116,26 +118,89 @@ async function main() {
       });
       if (attentionError) throw new Error(`Failed to insert attention item for ${name}: ${attentionError.message}`);
     }
+
+    return contact.id;
+  }
+
+  async function addPayment(businessId, contactId, name, { orderReference, amountDue, amountPaid, status, dueDaysFromNow }) {
+    const { error } = await supabase.from("payments").insert({
+      business_id: businessId,
+      contact_id: contactId,
+      order_reference: orderReference,
+      amount_due: amountDue,
+      amount_paid: amountPaid,
+      status,
+      due_date: new Date(Date.now() + dueDaysFromNow * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    });
+    if (error) throw new Error(`Failed to insert payment for ${name}: ${error.message}`);
+  }
+
+  async function addFieldValues(businessId, contactId, name, vertical, values) {
+    const { data: defs, error: defsError } = await supabase
+      .from("vertical_field_definitions")
+      .select("id, field_key, field_type")
+      .eq("vertical", vertical);
+    if (defsError) throw new Error(`Failed to load field definitions for ${vertical}: ${defsError.message}`);
+
+    for (const [fieldKey, rawValue] of Object.entries(values)) {
+      const def = defs.find((d) => d.field_key === fieldKey);
+      if (!def) throw new Error(`Unknown field_key "${fieldKey}" for vertical ${vertical}`);
+
+      const valueColumn = { text: "value_text", select: "value_text", number: "value_number", boolean: "value_boolean", date: "value_date" }[def.field_type];
+      const { error } = await supabase.from("order_field_values").insert({
+        contact_id: contactId,
+        business_id: businessId,
+        field_definition_id: def.id,
+        [valueColumn]: rawValue,
+      });
+      if (error) throw new Error(`Failed to insert field value ${fieldKey} for ${name}: ${error.message}`);
+    }
   }
 
   console.log("Creating contacts, messages, and attention-queue entries...");
   const hoursAgo = (h) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString();
 
-  // Meera's Tailoring (fashion) -- 2 unresolved attention items.
-  await addContact(BIZ_FASHION, "fashion", "new_inquiry", "Priya K.", "+919991110001", "Is the blue kurta ready yet?", hoursAgo(48), "unmatched_message");
-  await addContact(BIZ_FASHION, "fashion", "paid", "Rahul S.", "+919991110002", "Payment done, thank you!", hoursAgo(1), null);
-  await addContact(BIZ_FASHION, "fashion", "order_confirmed", "Ananya", "+919991110003", "Can I get it by Friday or Saturday, still deciding", hoursAgo(6), "ambiguous_match");
+  // Meera's Tailoring (fashion) -- 2 unresolved attention items. Fashion has zero
+  // vertical_field_definitions (only baker/gift do) -- Priya/Ananya deliberately get no
+  // order_field_values, proving the contact-detail screen's "no vertical fields for this
+  // business type" state, not just the populated one.
+  const priyaId = await addContact(BIZ_FASHION, "fashion", "new_inquiry", "Priya K.", "+919991110001", "Is the blue kurta ready yet?", hoursAgo(48), "unmatched_message");
+  const rahulId = await addContact(BIZ_FASHION, "fashion", "paid", "Rahul S.", "+919991110002", "Payment done, thank you!", hoursAgo(1), null);
+  const ananyaId = await addContact(BIZ_FASHION, "fashion", "order_confirmed", "Ananya", "+919991110003", "Can I get it by Friday or Saturday, still deciding", hoursAgo(6), "ambiguous_match");
+  await addPayment(BIZ_FASHION, rahulId, "Rahul S.", { orderReference: "ORD-1042", amountDue: 1850, amountPaid: 1850, status: "paid", dueDaysFromNow: -3 });
+  await addPayment(BIZ_FASHION, ananyaId, "Ananya", { orderReference: "ORD-1043", amountDue: 3200, amountPaid: 0, status: "overdue", dueDaysFromNow: -1 });
+  // Priya: no payment yet -- too early (still New Inquiry) -- proves the "no payments" state.
 
   // Sweet Crumb Bakes (baker) -- 1 unresolved, and a "cancelled" stage to prove chips don't
   // mislabel it as a success state just because pipeline_stages.sort_order is highest there.
-  await addContact(BIZ_BAKER, "baker", "awaiting_advance_payment", "Kavya", "+919992220001", "Sent the payment screenshot on WhatsApp", hoursAgo(3), null);
-  await addContact(BIZ_BAKER, "baker", "cancelled", "Deepak", "+919992220002", "Actually please cancel my order, sorry", hoursAgo(20), null);
-  await addContact(BIZ_BAKER, "baker", "new_inquiry", "Sana", "+919992220003", "Can you do a 2kg chocolate cake for Saturday?", hoursAgo(2), "unmatched_message");
+  // Baker has 13 real vertical_field_definitions -- Kavya gets most of them populated
+  // (a fuller order), Deepak gets almost none (cancelled early), Sana gets exactly one
+  // (occasion -- just inquired, nothing else decided) -- a realistic spread of completeness.
+  const kavyaId = await addContact(BIZ_BAKER, "baker", "awaiting_advance_payment", "Kavya", "+919992220001", "Sent the payment screenshot on WhatsApp", hoursAgo(3), null);
+  const deepakId = await addContact(BIZ_BAKER, "baker", "cancelled", "Deepak", "+919992220002", "Actually please cancel my order, sorry", hoursAgo(20), null);
+  const sanaId = await addContact(BIZ_BAKER, "baker", "new_inquiry", "Sana", "+919992220003", "Can you do a 2kg chocolate cake for Saturday?", hoursAgo(2), "unmatched_message");
+  await addFieldValues(BIZ_BAKER, kavyaId, "Kavya", "baker", {
+    occasion: "Anniversary",
+    cake_flavour: "Black Forest",
+    cake_size_weight: "1.5 kg",
+    egg_or_eggless: "Eggless",
+    custom_design_requirements: "Two-tier with fresh flowers",
+    quantity: 1,
+    pickup_or_delivery: "Delivery",
+    delivery_pickup_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    delivery_address: "12 MG Road, Bengaluru",
+  });
+  await addFieldValues(BIZ_BAKER, deepakId, "Deepak", "baker", { cake_flavour: "Chocolate", quantity: 1 });
+  await addFieldValues(BIZ_BAKER, sanaId, "Sana", "baker", { occasion: "Birthday" });
+  await addPayment(BIZ_BAKER, kavyaId, "Kavya", { orderReference: "ORD-2001", amountDue: 1800, amountPaid: 900, status: "pending", dueDaysFromNow: 3 });
+  // Deepak (cancelled) and Sana (brand-new inquiry): no payments yet.
 
   // Glow Studio Appointments (service) -- 0 unresolved, proves the attention banner hides
-  // itself cleanly rather than rendering "0" or an empty bar.
-  await addContact(BIZ_SERVICE, "service", "confirmed", "Fatima", "+919993330001", "See you at 4pm!", hoursAgo(5), null);
+  // itself cleanly rather than rendering "0" or an empty bar. Service also has zero
+  // vertical_field_definitions, like fashion.
+  const fatimaId = await addContact(BIZ_SERVICE, "service", "confirmed", "Fatima", "+919993330001", "See you at 4pm!", hoursAgo(5), null);
   await addContact(BIZ_SERVICE, "service", "inquiry", "Zoya", "+919993330002", "Do you have any evening slots this week?", hoursAgo(30), null);
+  await addPayment(BIZ_SERVICE, fatimaId, "Fatima", { orderReference: "ORD-3001", amountDue: 500, amountPaid: 500, status: "paid", dueDaysFromNow: -5 });
 
   console.log("Done. Business ids:");
   console.log({ BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE });
