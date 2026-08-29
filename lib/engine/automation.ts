@@ -134,7 +134,7 @@ export async function processInboundMessage(
   }
 
   // Trial-expiry graceful degradation applies to outbound automation generally, not just
-  // reminders (docs/decisions/2026-08-28-operational-loose-ends.md item 16) -- a separate
+  // reminders (docs/architecture/decisions/0013-trial-expiry-separate-from-kill-switch.md) -- a separate
   // computed condition from automation_paused, never that same flag.
   const { data: settingsRow } = await supabase
     .from("business_settings")

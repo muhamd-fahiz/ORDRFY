@@ -18,7 +18,7 @@ comment on table internal_reply_rules is
   'Section 10).';
 
 comment on column internal_reply_rules.language is
-  'India-fit addendum #10 (docs/decisions/2026-08-28-india-owner-fit.md): the same rule_key '
+  'ADR-0007 (docs/architecture/decisions/0007-multi-language-support.md): the same rule_key '
   'can have one row per language (e.g. fashion_price/en and fashion_price/hi are two rows, '
   'not one row with mixed content). Matching logic should prefer the contact''s business''s '
   'businesses.preferred_language, falling back to en if no row exists in that language for '

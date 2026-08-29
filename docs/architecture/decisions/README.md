@@ -1,0 +1,40 @@
+# Architecture Decision Records
+
+One file per significant technical decision: what was decided, why, what alternatives were
+considered, and any real bugs found while building it. Read CLAUDE.md first — it's the
+current-state reference; these records are the reasoning trail behind it.
+
+A reversed decision gets a new ADR that marks the old one **Superseded** — never delete or
+rewrite history. Numbers are assigned in the order decisions were made and are never reused.
+
+| # | Title | Status |
+|---|---|---|
+| [0001](0001-instagram-whatsapp-consent-routing.md) | Instagram reminders route through WhatsApp via customer-confirmed consent | Accepted |
+| [0002](0002-whatsapp-template-category-guard.md) | WhatsApp reminder templates locked to utility category, enforced at the database | Accepted |
+| [0003](0003-append-only-reminder-channel-consent.md) | `reminder_channel_consent` is append-only, enforced by trigger for every role | Accepted |
+| [0004](0004-reminder-engine-heartbeat-monitoring.md) | Reminder-engine heartbeat monitoring via `system_health` | Accepted |
+| [0005](0005-whatsapp-tier-tracking-columns.md) | WhatsApp messaging-tier tracking columns added ahead of the sync logic | Accepted |
+| [0006](0006-unified-owner-attention-queue.md) | Unified `owner_attention_queue` as the single "Needs Owner Attention" mechanism | Accepted |
+| [0007](0007-multi-language-support.md) | Multi-language support via `language` columns and `preferred_language` | Accepted |
+| [0008](0008-whatsapp-opt-out-handling.md) | Detect and honor WhatsApp opt-outs automatically | Accepted |
+| [0009](0009-verticals-reference-table.md) | `verticals` reference table replaces hardcoded CHECK lists | Accepted |
+| [0010](0010-generic-vertical-field-definitions.md) | Generic vertical-specific order fields via `vertical_field_definitions` | Accepted |
+| [0011](0011-soft-delete-only-data-offboarding.md) | Soft-delete-only data offboarding — no automated hard-delete pipeline | Accepted |
+| [0012](0012-channel-reconnection-reset-flow.md) | Channel reconnection is a reset, not a connection-history table | Accepted |
+| [0013](0013-trial-expiry-separate-from-kill-switch.md) | Trial-expiry degradation is a separate condition, never `automation_paused` | Accepted |
+| [0014](0014-activity-log-actor-generalization.md) | `activity_log.actor_user_id` generalized beyond payments | Accepted |
+| [0015](0015-vault-backed-credentials.md) | Supabase Vault-backed `credentials_ref`, with two real bugs found and fixed | Accepted |
+| [0016](0016-carbon-pink-design-tokens.md) | "Carbon Pink" design tokens, namespaced separately from the admin panel | Accepted |
+| [0017](0017-owner-authentication-model.md) | Owner authentication model — admin-provisioned accounts, no mandatory MFA | Accepted |
+| [0018](0018-route-handler-session-checks.md) | Route handlers check session state directly, never call the redirect-based guard | Accepted |
+| [0019](0019-today-view-mutation-design.md) | Today-view mutation design — "Review" semantics and send-reminder idempotency | Accepted |
+
+## Migration note
+
+These records replace `docs/decisions/` (8 dated addendum-batch files, retired 2026-08-29).
+Each original file bundled several unrelated decisions under one "when it arrived" document;
+they're unbundled here into one ADR per actual decision. A handful of items from those files
+weren't decisions in the ADR sense (a "monitor only, not building this" note, a content/copy
+requirement with no schema impact, a content-seeding record, a verification of an existing
+fact) — those are folded into the **Notes** section of whichever ADR they're most related to,
+rather than each getting a thin standalone file.

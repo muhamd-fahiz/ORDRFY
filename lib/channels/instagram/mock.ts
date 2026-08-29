@@ -15,7 +15,7 @@ const WINDOW_MS = 24 * 60 * 60 * 1000;
  * Sponsored Messages / One-Time Notifications for Instagram. Reflecting this constraint in
  * the mock, not just the real adapter, means the reminder engine's full channel-selection
  * logic (WhatsApp-via-consent -> Instagram-if-window-open -> failed/channel_unsupported,
- * see docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md) gets exercised in
+ * see docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md) gets exercised in
  * local/CI tests before any real Instagram credentials exist.
  */
 export interface MockInstagramWebhookPayload {

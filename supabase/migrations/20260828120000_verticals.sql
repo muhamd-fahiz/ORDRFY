@@ -1,4 +1,4 @@
--- Vertical Expansion addendum (docs/decisions/2026-08-28-vertical-expansion.md): the
+-- Vertical Expansion (docs/architecture/decisions/0009-verticals-reference-table.md): the
 -- original schema hardcoded `vertical text check (vertical in ('fashion','tutor','service'))`
 -- independently on FIVE tables (businesses, pipeline_stages, internal_reply_rules,
 -- message_templates, and now vertical_field_definitions). Going from 3 to 5 verticals meant

@@ -1,4 +1,4 @@
--- Vertical Expansion addendum (docs/decisions/2026-08-28-vertical-expansion.md): Baker and
+-- Vertical Expansion (docs/architecture/decisions/0010-generic-vertical-field-definitions.md): Baker and
 -- Gift Business introduce many order-specific fields (cake flavour, eggless/egg, custom
 -- design notes, occasion, recipient relationship, personalization text, surprise-delivery
 -- flag, budget range, delivery address, ...) that don't fit the original contacts/payments

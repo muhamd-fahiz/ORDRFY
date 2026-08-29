@@ -238,7 +238,7 @@ on conflict (business_id, language, keyword) do update set active = excluded.act
 -- submitted and approved via Meta Business Manager (Build Phase 4). All are category
 -- 'utility', enforced by the reminder-template-category guard trigger. Instagram rows
 -- carry reply_text only, used when the window is open or WhatsApp consent has been granted
--- (docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md).
+-- (docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md).
 -- ---------------------------------------------------------------------------
 insert into message_templates (
   business_id, vertical, channel_id, template_key, category, approval_status, reply_text, active

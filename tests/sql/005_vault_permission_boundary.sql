@@ -1,6 +1,6 @@
 -- Confirms the Vault credential functions (20260828120026) are reachable only by
 -- service_role -- the fix for the default-ACL grant leak documented in
--- docs/decisions/2026-08-28-encryption-and-credentials-hardening.md: Supabase's platform
+-- docs/architecture/decisions/0015-vault-backed-credentials.md: Supabase's platform
 -- grants EXECUTE on new public-schema functions directly to anon/authenticated, so a plain
 -- `revoke ... from public` alone is not enough; anon and authenticated must be revoked by
 -- name too.

@@ -15,7 +15,7 @@ create table businesses (
 );
 
 comment on column businesses.preferred_language is
-  'India-fit addendum #10 (docs/decisions/2026-08-28-india-owner-fit.md): the default '
+  'ADR-0007 (docs/architecture/decisions/0007-multi-language-support.md): the default '
   'language internal_reply_rules/message_templates matching prefers for this business''s '
   'customers, ISO 639-1-style code (e.g. en, hi). A first-class column here, not a '
   'business_settings key, because it is as fundamental to a business''s identity as vertical '

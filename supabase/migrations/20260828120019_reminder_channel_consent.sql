@@ -1,7 +1,8 @@
 -- Instagram -> WhatsApp consent-based reminder routing
--- (docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md).
+-- (docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md).
 --
--- APPEND-ONLY by design (per the DPDP Act compliance recommendation, round 2): a status
+-- APPEND-ONLY by design (docs/architecture/decisions/0003-append-only-reminder-channel-consent.md,
+-- DPDP Act compliance): a status
 -- change (e.g. granted -> revoked) INSERTs a new row referencing the same contact_id +
 -- requested_channel_id; existing rows are never updated or deleted. "Current" consent
 -- state for a contact is derived by querying the most recent row -- see the

@@ -1,6 +1,7 @@
 /**
- * The reminder engine's channel-selection logic (docs/decisions/2026-08-28-instagram-
- * whatsapp-consent-routing.md), as a pure function -- deliberately no DB access here, so
+ * The reminder engine's channel-selection logic
+ * (docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md), as a pure
+ * function -- deliberately no DB access here, so
  * the branching (the part most worth getting exactly right) is unit-testable without a
  * database.
  *

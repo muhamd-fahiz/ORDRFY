@@ -23,4 +23,4 @@ comment on column business_channel_connections.current_tier is
 comment on column business_channel_connections.tier_usage_today is
   'Rolling 24h business-initiated-conversation count against current_tier. Admin panel '
   'should warn at a configurable threshold (e.g. 80% of tier) BEFORE sends start failing, '
-  'not after (round 3 recommendation #6, docs/decisions/2026-08-28-scale-proof-owner-experience.md).';
+  'not after (docs/architecture/decisions/0005-whatsapp-tier-tracking-columns.md).';

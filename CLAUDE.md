@@ -21,52 +21,28 @@ you don't need to re-read all 12 every time.
 9. `Ordrfy-Technical-Spec.pdf`, `Ordrfy-Critical-Review.pdf` — historical only, explicitly marked "do not build against."
 10. **Missing file**: the prompt's reading list names `Ordrfy-Tech-Stack-Final.md`, which does not exist in the folder. `Ordrfy-Final-Architecture.pdf` exists instead and is not mentioned in the prompt's list at all, despite being cited repeatedly by the Hardening Addendum. Flagged to user; treated as document #6 above.
 
-## Session decisions (docs/decisions/) — rank above all 12 planning documents
+## Session decisions (docs/architecture/decisions/) — rank above all 12 planning documents
 
-These are the project owner's direct decisions made during this build, each addressing a
-genuine provider limitation discovered during implementation — a permitted change-control
-trigger, not a hypothetical concern. They supersede anything in the 12-document set on
-their specific topic.
+The project owner's direct decisions made during this build, each addressing a genuine
+provider limitation or design gap discovered during implementation — a permitted
+change-control trigger, not a hypothetical concern. They supersede anything in the
+12-document set on their specific topic. Full reasoning, alternatives considered, and any
+bugs found while building each one live in `docs/architecture/decisions/` (ADR-0001 through
+ADR-0019 as of 2026-08-29; see that folder's `README.md` for the complete index) — this
+section is a pointer, not a duplicate of that content.
 
-- `docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md` — Instagram reminders
-  route through WhatsApp with explicit, customer-confirmed consent, rather than only
-  falling back to manual owner follow-up. Supersedes the original "window-check + Needs
-  Owner Attention" resolution to blocker #4 below.
-- `docs/decisions/2026-08-28-round-2-recommendations.md` — WhatsApp reminder-template
-  category guard, append-only consent history (DPDP Act), reminder-engine heartbeat
-  monitoring, and a monitor-only note on per-tenant sending-reputation risk.
-- `docs/decisions/2026-08-28-scale-proof-owner-experience.md` — WhatsApp messaging-tier
-  tracking hook, a unified `owner_attention_queue` (this is now THE "Needs Owner Attention"
-  mechanism — supersedes the earlier plan of querying `reminders` directly for that), and
-  `business_settings` key conventions for instant-ack and notification-digest behavior.
-- `docs/decisions/2026-08-28-india-owner-fit.md` — multi-language support (`language` on
-  `internal_reply_rules`/`message_templates`, `preferred_language` on `businesses`),
-  WhatsApp opt-out detection/honoring, and two Build-Phase-3+/4 UX decisions with no
-  schema impact (App→API onboarding disclosure, single-tap owner actions).
-- `docs/decisions/2026-08-28-vertical-expansion.md` — scope expansion from 3 to 5
-  verticals (adds Baker/Custom Cake and Personalized/Surprise Gift). Introduces a
-  `verticals` reference table (replacing hardcoded `CHECK` lists on five tables) and a
-  generic `vertical_field_definitions`/`order_field_values` mechanism for vertical-specific
-  order fields.
-- `docs/decisions/2026-08-28-bakers-gift-businesses.md` — the actual Baker/Gift content
-  (pipeline stages, field definitions, reply rules, templates, reminder types), resolving
-  the gap the vertical-expansion addendum flagged. Baker and Gift are now `active = true`.
-- `docs/decisions/2026-08-28-encryption-and-credentials-hardening.md` — confirmed (not
-  assumed) encryption-at-rest/TLS claims against current Supabase docs; Vault-backed
-  `credentials_ref` with two real bugs found and fixed while validating it (a default-ACL
-  grant leak, a NOT NULL violation) — see the doc before touching
-  `20260828120026_credential_vault_functions.sql` or `lib/secrets/vault.ts` again.
-- `docs/decisions/2026-08-28-operational-loose-ends.md` — data offboarding decision
-  (soft-delete only, simplifies away Final-Architecture's originally-planned scheduled
-  hard-delete job), channel reconnection/reset hook, trial-expiry graceful degradation as a
-  *separate* computed condition from `automation_paused` (deliberately not reusing that
-  flag — see the doc for why), and a generalized `activity_log.actor_user_id` column.
+Highest-level supersession to know about before reading anything else: ADR-0001
+(Instagram → WhatsApp consent-based reminder routing) supersedes the original
+"window-check + Needs Owner Attention" resolution to known-blocker #4 below. ADR-0013
+(trial-expiry degradation) explicitly does **not** reuse `businesses.automation_paused` —
+see Non-Negotiable Architecture Rule 7. Genuinely open decisions the project owner still
+needs to make (not yet resolved either way) are tracked separately in
+`docs/decisions-register.md`, never mixed into the ADR list.
 
 ## Locked scope
 
-- **5 verticals** (expanded from the original 3 on 2026-08-28, see
-  `docs/decisions/2026-08-28-vertical-expansion.md` and
-  `docs/decisions/2026-08-28-bakers-gift-businesses.md`), built together, no sequencing (the
+- **5 verticals** (expanded from the original 3 on 2026-08-28, see ADR-0009 and ADR-0010),
+  built together, no sequencing (the
   Critical-Review doc's Fashion-first argument was explicitly rejected for the original 3
   — see doc, do not resurrect it, and the same non-sequencing principle applies to the
   expansion): **Fashion, Tutor, Appointment-Based Service, Baker/Custom Cake, Personalized/
@@ -74,18 +50,18 @@ their specific topic.
 - 2 channels, built together: **WhatsApp, Instagram** — via shared `MessagingChannelProvider` adapter interface
 - Facebook Messenger: adapter pattern must support it later; do not build now
 - **10 vertical×channel combinations** (5×2, was 6/3×2 before the expansion), all tested end-to-end before launch, plus multi-channel-business test and cross-vertical regression — content exists for all 10 now; actual Build Phase 6 testing against each is unstarted, same as it was for the original 6
-- Timeline: 26–34 weeks honest estimate for the original 3×2 scope. Not a target to compress. **Not yet re-estimated for 5×2** — the vertical-expansion addendum didn't include a revised timeline, and CLAUDE.md should not invent one; flag this to the user rather than assuming the original estimate still holds.
+- Timeline: 26–34 weeks honest estimate for the original 3×2 scope. Not a target to compress. **Not yet re-estimated for 5×2** — the vertical-expansion addendum didn't include a revised timeline, and CLAUDE.md should not invent one; tracked as an open item in `docs/decisions-register.md` rather than assuming the original estimate still holds.
 - Priority order for every tradeoff: **security → reliability → working core product → simple maintainable architecture → cost optimization → future expansion**
 
 ## Non-negotiable architecture rules
 
 1. **One shared engine.** Pipeline, template matching, reminders, payments, dashboard, tenant isolation, audit logging, kill switch — zero vertical or channel conditionals. Vertical differences live in `pipeline_stages` / `internal_reply_rules` / template config data. Channel differences live only inside adapters implementing `MessagingChannelProvider`.
-2. **Contact identity is channel-independent**: `contacts` + `contact_channel_identities`, never a flat phone field. No auto-merge across channels in V1 (manual link is a V1.5 feature, additive). **Exception (2026-08-28, see docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md)**: a customer explicitly confirming "yes, message me on WhatsApp at this number" in-chat is a customer-confirmed link, not a system-inferred merge — this is allowed in V1 and does not depend on or unblock the V1.5 auto-merge item. Never conflate the two when reasoning about this rule.
+2. **Contact identity is channel-independent**: `contacts` + `contact_channel_identities`, never a flat phone field. No auto-merge across channels in V1 (manual link is a V1.5 feature, additive). **Exception (2026-08-28, see ADR-0001)**: a customer explicitly confirming "yes, message me on WhatsApp at this number" in-chat is a customer-confirmed link, not a system-inferred merge — this is allowed in V1 and does not depend on or unblock the V1.5 auto-merge item. Never conflate the two when reasoning about this rule.
 3. **Multi-tenancy via Postgres RLS**, `business_id` resolved live via `business_memberships` + `auth.uid()` — never a static JWT claim. RLS policies ship in the same migration that creates the table, never retrofitted.
 4. **Webhook durability**: verify signature → durably store (status `received`) → ack 200 → then process. Never ack before storing. No `waitUntil()`-only fire-and-forget on anything in the critical path.
 5. **Idempotency everywhere**: `(provider, provider_message_id)` uniqueness on inbound messages; `idempotency_key` on reminders and on outbound auto-reply sends; `FOR UPDATE SKIP LOCKED` for concurrent reminder claiming.
 6. **Mock providers first**: `MockWhatsAppProvider`, `MockInstagramProvider`, `MockPaymentProvider` fully built and tested before any real credentials.
-7. **Admin kill switch** (`businesses.automation_paused`): suppresses outbound automation across *all* enabled channels for a business simultaneously. Inbound still logs normally. Must be tested against multi-channel businesses, not just one channel. **This flag means exactly one thing — admin-toggled — and nothing else.** Trial-expiry graceful degradation (round 4 rec. #16) is a *separate*, computed eligibility condition using `subscription_status`/`trial_ends_at`/`business_settings['trial_grace_period_days']`, never implemented by setting this same flag automatically — see `docs/decisions/2026-08-28-operational-loose-ends.md` for why overloading it is unsafe.
+7. **Admin kill switch** (`businesses.automation_paused`): suppresses outbound automation across *all* enabled channels for a business simultaneously. Inbound still logs normally. Must be tested against multi-channel businesses, not just one channel. **This flag means exactly one thing — admin-toggled — and nothing else.** Trial-expiry graceful degradation (ADR-0013) is a *separate*, computed eligibility condition using `subscription_status`/`trial_ends_at`/`business_settings['trial_grace_period_days']`, never implemented by setting this same flag automatically — see ADR-0013 for why overloading it is unsafe.
 8. **No hardcoded pricing or channel counts**: `business_entitlements` gates channel access; pricing logic never hardcodes ₹299 or a channel count.
 
 ## Reconciled final schema (supersedes any single source document)
@@ -95,7 +71,7 @@ Base is `Final-Architecture.pdf` Section 3, with the Multi-Channel Addendum's co
 ```
 auth.users                        -- Supabase-managed
 
-verticals                         -- NEW (vertical-expansion addendum) -- replaces hardcoded
+verticals                         -- NEW (ADR-0009) -- replaces hardcoded
                                    -- CHECK(vertical in (...)) lists on 5 different tables
   key (PK, text, e.g. 'fashion'|'tutor'|'service'|'baker'|'gift'), label, active, created_at
   -- active=false for baker/gift until their real pipeline/template content is seeded.
@@ -116,7 +92,7 @@ businesses
   automation_paused boolean default false,   -- kill switch
   created_at, deleted_at
   -- NOTE: no whatsapp_connected/whatsapp_number here — superseded by business_channel_connections
-  -- preferred_language added india-owner-fit addendum #10 -- first-class column, not a
+  -- preferred_language added ADR-0007 -- first-class column, not a
   -- business_settings key, same tier of importance as vertical/timezone
 
 channels
@@ -127,9 +103,9 @@ business_channel_connections
   credentials_ref, disconnected_at (nullable), created_at,
   current_tier (nullable, WhatsApp-only, e.g. 'tier_250'|'tier_1k'|'tier_10k'|'tier_100k'|'unlimited'),
   tier_usage_today (nullable), tier_last_synced_at (nullable)
-  -- tier_* columns added round 3 rec. #6 -- synced from the real provider in Build Phase 4,
+  -- tier_* columns added ADR-0005 -- synced from the real provider in Build Phase 4,
   -- unused (null) until then; admin panel warns before this is hit, not after
-  -- disconnected_at added round 4 rec. #15 -- basic audit timestamp for the admin-panel
+  -- disconnected_at added ADR-0012 -- basic audit timestamp for the admin-panel
   -- disconnect/reconnect reset action (Build Phase 4); never touches historical messages/contacts
 
 business_entitlements
@@ -152,13 +128,13 @@ contact_channel_identities
   -- window check (see reminders below). When a WhatsApp identity row is created via the
   -- Instagram consent-routing flow, provider_metadata records how:
   --   { "linked_via": "instagram_consent_flow", "consented_at": "<timestamp>" }
-  -- opted_out_at added india-owner-fit addendum #11 -- per-channel opt-out flag, one more
+  -- opted_out_at added ADR-0008 -- per-channel opt-out flag, one more
   -- data-driven condition in the reminder engine's send-eligibility check, not a new code path
 
 pipeline_stages
   id, business_id (nullable = vertical default), vertical (FK verticals.key), stage_key, stage_label, sort_order
 
-vertical_field_definitions        -- NEW (vertical-expansion addendum)
+vertical_field_definitions        -- NEW (ADR-0010)
   id, vertical (FK verticals.key), field_key, field_label,
   field_type ('text'|'number'|'boolean'|'date'|'select'),
   select_options (text[], nullable), is_required, sort_order, active
@@ -167,14 +143,14 @@ vertical_field_definitions        -- NEW (vertical-expansion addendum)
   -- text, ...) -- structured, not jsonb, specifically so a field like surprise_required
   -- can be validated and queried, per the Gift dashboard's own stated requirement.
 
-order_field_values                -- NEW (vertical-expansion addendum)
+order_field_values                -- NEW (ADR-0010)
   id, contact_id, business_id, field_definition_id (FK vertical_field_definitions),
   value_text, value_number, value_boolean, value_date, created_at, updated_at
   UNIQUE (contact_id, field_definition_id)
   -- Exactly one value_* column populated per row, matching the referenced field's
   -- field_type -- enforced at the application layer (Build Phase 3), not a DB CHECK.
 
-opt_out_keywords                  -- NEW (india-owner-fit addendum #11)
+opt_out_keywords                  -- NEW (ADR-0008)
   id, business_id (nullable = global default), language, keyword, active
   UNIQUE (business_id, language, keyword)
   -- Checked against every inbound message BEFORE internal_reply_rules matching -- an
@@ -193,7 +169,7 @@ internal_reply_rules
   id, business_id (nullable), vertical (FK verticals.key), rule_key,
   language ('en' default), trigger_keywords (array), trigger_priority, reply_text, active
   UNIQUE (business_id, vertical, rule_key, language)
-  -- language added india-owner-fit addendum #10 -- same rule_key can have one row per
+  -- language added ADR-0007 -- same rule_key can have one row per
   -- language instead of forcing mixed content into one row; matching prefers
   -- businesses.preferred_language, falls back to en
 
@@ -205,7 +181,7 @@ message_templates                 -- RENAMED from whatsapp_templates
   UNIQUE (business_id, vertical, channel_id, template_key, language)
   -- WhatsApp rows: Meta-approved template, required for anything outside the 24h window.
   -- Any WhatsApp row referenced by reminders.message_template_id MUST have category='utility'
-  -- -- enforced by a DB trigger on reminders, not just app code (round 2 recommendation #1).
+  -- -- enforced by a DB trigger on reminders, not just app code (ADR-0002).
   -- "Marketing"/"Authentication" are real Meta categories but never valid for reminder use.
   -- "Service" is NOT a template category at all (it's the free-form in-window conversation
   -- type -- that's what internal_reply_rules covers) -- deliberately excluded from the enum.
@@ -213,12 +189,12 @@ message_templates                 -- RENAMED from whatsapp_templates
   -- the IG window is open, or when the reminder has been routed to WhatsApp via consent (see
   -- reminders/reminder_channel_consent below).
 
-reminder_channel_consent          -- NEW (docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md)
+reminder_channel_consent          -- NEW (ADR-0001, append-only design per ADR-0003)
   id, contact_id, business_id, requested_channel_id (FK channels), source_channel_id (FK channels),
   status ('pending'|'granted'|'declined'|'no_response'|'revoked'), requested_at, responded_at, created_at
   -- APPEND-ONLY: no UNIQUE(contact_id, requested_channel_id) -- a status change inserts a
   -- new row, never mutates an old one. UPDATE/DELETE blocked by a trigger for every role,
-  -- including service_role (DPDP Act compliance, round 2 recommendation #2).
+  -- including service_role (DPDP Act compliance, ADR-0003).
   -- Query current state via the current_reminder_channel_consent view (security_invoker=true
   -- so it actually respects RLS), never by treating one row in this table as "the" answer.
 
@@ -230,21 +206,21 @@ reminders
   -- Full send-eligibility gate, in order (later additions are prerequisite checks BEFORE
   -- the channel-selection logic, not replacements for it):
   --   0a. automation_paused = false for the business (admin kill switch, rule 7)
-  --   0b. trial-eligibility per round 4 rec. #16 (subscription_status/trial_ends_at/grace period)
-  --   0c. contact_channel_identities.opted_out_at is null for the target channel identity (india-fit rec. #11)
-  --   Then channel selection (docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md):
+  --   0b. trial-eligibility per ADR-0013 (subscription_status/trial_ends_at/grace period)
+  --   0c. contact_channel_identities.opted_out_at is null for the target channel identity (ADR-0008)
+  --   Then channel selection (ADR-0001):
   --   1. WhatsApp identity exists AND current_reminder_channel_consent.status='granted' -> send via WhatsApp template
   --   2. else Instagram window open (contact_channel_identities.last_inbound_at) -> send via Instagram directly
   --   3. else -> status='failed', failure_reason='channel_unsupported', insert into
   --      owner_attention_queue (reason='reminder_channel_unsupported') -- see that table's entry above
 
-system_health                     -- NEW (round 2 recommendation #3)
+system_health                     -- NEW (ADR-0004)
   job_key (PK, e.g. 'reminder_engine'), last_run_at, updated_at
   -- Reminder-claiming job upserts its row every run; admin panel / scheduled check flags
   -- staleness above a threshold. Detects the engine silently stopping, which no individual
   -- reminder's status can reveal.
 
-owner_attention_queue             -- NEW (round 3 recommendation #7) -- THE "Needs Owner
+owner_attention_queue             -- NEW (ADR-0006) -- THE "Needs Owner
                                    -- Attention" mechanism; supersedes querying reminders directly
   id, business_id, contact_id (nullable), reason ('unmatched_message'|'ambiguous_match'|
     'media_message'|'reminder_channel_unsupported'|'manual_flag'),
@@ -254,7 +230,7 @@ owner_attention_queue             -- NEW (round 3 recommendation #7) -- THE "Nee
   -- trail, this is the actionable/resolvable queue. Oldest-unresolved-first + count badge
   -- are both a single query: order by created_at where resolved_at is null / count(*)
   -- where resolved_at is null. Also the signal source for which alerts are "urgent" vs.
-  -- "batched into a digest" (round 3 rec. #9).
+  -- "batched into a digest" (ADR-0006).
 
 payments
   id, business_id, contact_id, order_reference, amount_due, amount_paid, status, due_date,
@@ -266,17 +242,17 @@ business_settings
   -- Known keys (all per-business, seeded from a vertical default at business creation,
   -- owner-editable after -- same established pattern, no schema change needed per new key):
   --   payment_reminder_delay_days, follow_up_silence_hours (original)
-  --   instant_ack_enabled, instant_ack_text                (round 3 rec. #8)
-  --   notification_digest_frequency_minutes, last_digest_sent_at (round 3 rec. #9)
-  --   trial_grace_period_days                              (round 4 rec. #16 -- see reminders
-  --     comment / docs/decisions/2026-08-28-operational-loose-ends.md for the eligibility
-  --     formula; deliberately NOT implemented by reusing automation_paused, see that doc)
+  --   instant_ack_enabled, instant_ack_text                (ADR-0006 Notes)
+  --   notification_digest_frequency_minutes, last_digest_sent_at (ADR-0006 Notes)
+  --   trial_grace_period_days                              (ADR-0013 -- see reminders
+  --     comment for the eligibility formula; deliberately NOT implemented by reusing
+  --     automation_paused, see that ADR for why)
 
 activity_log
   id, business_id, contact_id (nullable), event_type, event_detail,
   actor_user_id (nullable, FK auth.users), created_at
   -- event_type covers customer-facing AND automation/webhook/admin events (V1-Master-Plan Section 9a)
-  -- actor_user_id added round 4 rec. #17, generalized beyond payments -- first-class "who
+  -- actor_user_id added ADR-0014, generalized beyond payments -- first-class "who
   -- did this" column (kill-switch toggles, vertical reassignment, channel reconnection,
   -- manual payment-status changes); null for automation-driven events, no human actor there
 
@@ -288,35 +264,35 @@ webhook_events                    -- NEW, not explicitly named in any doc but re
 
 Indexes (Final-Architecture Section 13, still valid, plus additions from this session): `contacts.business_id`; `contact_channel_identities(business_id, channel_id, provider_user_id)` unique; `messages(provider, provider_message_id)` unique; `messages.outbound_idempotency_key` unique; `reminders(scheduled_time_utc)` partial where `status='pending'`; `reminders(business_id, created_at)` partial where `status='failed' and failure_reason='channel_unsupported'` (the Needs Owner Attention admin queue query); `payments(business_id, status, due_date)`; `activity_log(business_id, created_at)`; `pipeline_stages(business_id, vertical)`; `reminder_channel_consent(contact_id, requested_channel_id, created_at desc)`.
 
-Triggers: (1, Final-Architecture Section 5) `contacts.pipeline_stage_id` guard — rejects cross-tenant/cross-vertical stage assignment even on an application bug. (2, round 2 rec. #1) `reminders` insert/update guard — rejects attaching a non-`utility`-category WhatsApp template. (3, round 2 rec. #2) `reminder_channel_consent` append-only guard — rejects any UPDATE/DELETE for every role.
+Triggers: (1, Final-Architecture Section 5) `contacts.pipeline_stage_id` guard — rejects cross-tenant/cross-vertical stage assignment even on an application bug. (2, ADR-0002) `reminders` insert/update guard — rejects attaching a non-`utility`-category WhatsApp template. (3, ADR-0003) `reminder_channel_consent` append-only guard — rejects any UPDATE/DELETE for every role.
 
 ## Build order
 
 1. **Foundation** — schema + migrations, Supabase Auth + RLS, admin panel skeleton with MFA, mock providers wired end-to-end. **Admin panel skeleton built and browser-tested (2026-08-28)**: `admin_users`-gated login, TOTP MFA enrollment + challenge (both actually exercised end-to-end in a browser, not just code review), businesses list/detail/create. **Owner-account creation/invite flow built and verified (2026-08-29)** — see known-blocker #10, now resolved. Foundation phase is complete.
    Hardening layers on top of `admin_users`+MFA gating (defense in depth, never the security boundary itself): host-aware `app/robots.ts` (disallows `/admin` and `/app` today, will disallow everything once `admin.`/`app.` are real separate hosts); no links to `/admin` from marketing pages, and no links to `/app` from marketing pages either now that the owner app exists; per-IP and per-(IP+email) rate limiting on both `/api/admin/login` and `/api/app/login` (`lib/rate-limit/`, in-memory locally, swaps to Upstash automatically once `UPSTASH_REDIS_REST_URL`/`TOKEN` are set — actually verified tripping correctly, both layers, not just written).
 2. **Shared engine** — pipeline engine, template/auto-reply matching w/ priority+conflict rules, reminder engine (`pg_cron`+`pg_net`, `FOR UPDATE SKIP LOCKED`), webhook durability pattern, kill switch, manual recovery tools
-2.5. **Owner app (not in the original 6-phase plan — inserted 2026-08-29)**: a real business-owner-facing UI, built against Phase 2's shared engine + mock providers ahead of Phase 4's real provider work so the UI is proven out before providers are swapped in. Visual direction "Carbon Pink" approved out of 3 proposed concepts — not written up as a `docs/decisions/` entry, lives only in `tailwind.config.ts`'s `ink`/`paper`/`pink`/`confirmed`/`attention`/`vertical.*` tokens, namespaced separately from the admin panel's `brand`/`status` tokens so admin stays functional-only per the "what NOT to build" list. A small component library exists (`components/ui/`: `Button`, `Chip`, `ContactCard`, `VerticalBadge`, `AttentionBanner`) plus a pure-component showcase at `/design-preview`. The real "Today" screen (`app/app/(protected)/today/`) is the only real screen built so far — reads via `createRlsClient()`, shows the signed-in owner's own contacts/pipeline-stage/`owner_attention_queue` state. Pipeline-stage chips render with a neutral tone universally for now: there's no data-driven way yet to know which stages count as a success vs. a cancellation vs. in-progress (verified this matters against real seeded data — baker's "Cancelled" stage has a *higher* `sort_order` than "Completed"). The "Review" action button on an attention-flagged contact is presentational only — no resolve/send-reminder mutation is wired yet. Dev-only fixture data for previewing against (3 businesses across fashion/baker/service, varied attention-queue states) lives in `scripts/seed-dev-preview-data.mjs`, deliberately separate from `supabase/seed.sql`.
+2.5. **Owner app (not in the original 6-phase plan — inserted 2026-08-29)**: a real business-owner-facing UI, built against Phase 2's shared engine + mock providers ahead of Phase 4's real provider work so the UI is proven out before providers are swapped in. Visual direction "Carbon Pink" approved out of 3 proposed concepts — see ADR-0016 for the full reasoning; tokens live in `tailwind.config.ts`'s `ink`/`paper`/`pink`/`confirmed`/`attention`/`vertical.*`, namespaced separately from the admin panel's `brand`/`status` tokens so admin stays functional-only per the "what NOT to build" list. A small component library exists (`components/ui/`: `Button`, `Chip`, `ContactCard`, `VerticalBadge`, `AttentionBanner`) plus a pure-component showcase at `/design-preview`. Owner authentication is built (ADR-0017: admin-provisioned accounts, no mandatory MFA) and the real "Today" screen (`app/app/(protected)/today/`) reads via `createRlsClient()`, showing the signed-in owner's own contacts/pipeline-stage/`owner_attention_queue` state. Pipeline-stage chips render with a neutral tone universally for now: there's no data-driven way yet to know which stages count as a success vs. a cancellation vs. in-progress (verified this matters against real seeded data — baker's "Cancelled" stage has a *higher* `sort_order` than "Completed"). The "Review" and "Send Reminder" actions are real mutations now, not presentational (ADR-0019) — Review resolves `owner_attention_queue` without moving pipeline stage; Send Reminder calls the real Phase 2 engine synchronously, capped at one per contact per day. Dev-only fixture data for previewing against (3 businesses across fashion/baker/service, varied attention-queue states) lives in `scripts/seed-dev-preview-data.mjs`, deliberately separate from `supabase/seed.sql` — note its one real gotcha: re-running it cascade-deletes any owner account's `business_memberships` row created against its fixture businesses (see the script's own header comment).
 3. **Vertical configuration** — real `pipeline_stages`/`internal_reply_rules` content for all 5 verticals (not placeholder). All 5 verticals' content exists in `seed.sql` as of 2026-08-28.
-4. **Real provider integration** — `InteraktAdapter` (WhatsApp), `InstagramProvider` (Meta Graph API direct, no BSP), each tested against sandbox before live. Also where WhatsApp tier tracking (`business_channel_connections.current_tier`) actually gets synced, and where the App→API onboarding-tradeoff disclosure screen belongs (india-owner-fit addendum #12).
+4. **Real provider integration** — `InteraktAdapter` (WhatsApp), `InstagramProvider` (Meta Graph API direct, no BSP), each tested against sandbox before live. Also where WhatsApp tier tracking (`business_channel_connections.current_tier`) actually gets synced (ADR-0005), and where the App→API onboarding-tradeoff disclosure screen belongs (ADR-0012 Notes).
 5. **Security hardening pass** — full automated test suite from Hardening Addendum
 6. **Launch acceptance** — all 10 vertical×channel combos (5×2) + multi-channel + cross-vertical regression
 
 ## Known blockers / open questions
 
 1. Instagram Business API review/approval timeline — unverified duration. **User is starting Meta Business/Instagram verification now, in parallel with Foundation/Shared Engine build (2026-08-28).** Not a code blocker.
-2. Instagram messaging cost model — still not researched; blocks finalizing `business_entitlements` pricing *amounts* only, not schema. Revisit before entitlements/pricing lock and again at the mandatory pre-launch re-verification checkpoint.
+2. Instagram messaging cost model — still not researched; blocks finalizing `business_entitlements` pricing *amounts* only, not schema. Revisit before entitlements/pricing lock and again at the mandatory pre-launch re-verification checkpoint. Tracked in `docs/decisions-register.md`.
 3. Instagram = direct-to-Meta-Graph-API, no BSP — already confirmed in the Multi-Channel Addendum. Not actually a blocker despite being listed as one in the original prompt.
 4. **RESOLVED (2026-08-28), then SUPERSEDED (2026-08-28)**: confirmed via Meta's own developer docs that Instagram Messaging API has no compliant way to send a business-initiated message outside the 24-hour window — no usable message tags, no Human Agent tag (Messenger-only), no Sponsored Messages/One-Time Notifications for Instagram. This is a hard platform constraint, not a design gap.
    The first resolution (window-check + Needs Owner Attention fallback, no automated Instagram-only reminders) has been **superseded same-day** by
-   `docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md`: Instagram customers are asked, in-chat, for explicit consent to receive reminders via WhatsApp instead. See that doc and the `reminder_channel_consent` schema entry above for the full current logic. The window-check against `contact_channel_identities.last_inbound_at` is still used, but only as the *second* fallback (send directly on Instagram if the window happens to be open), not the only alternative to manual follow-up.
+   ADR-0001: Instagram customers are asked, in-chat, for explicit consent to receive reminders via WhatsApp instead. See that ADR and the `reminder_channel_consent` schema entry above for the full current logic. The window-check against `contact_channel_identities.last_inbound_at` is still used, but only as the *second* fallback (send directly on Instagram if the window happens to be open), not the only alternative to manual follow-up.
    **Real product implication, stated plainly**: Instagram-only businesses that never consent to WhatsApp contact, and whose Instagram window is closed at send time, still don't get an automated reminder in V1 — that residual case is `reminders.status='failed', failure_reason='channel_unsupported'`, surfaced for manual owner follow-up. This is a smaller gap than the original resolution left, not a fully eliminated one — Meta's platform constraint is still real.
 5. `Ordrfy-Tech-Stack-Final.md` named in the prompt does not exist in the folder; `Ordrfy-Final-Architecture.pdf` exists but isn't in the prompt's list. Resolved by treating the latter as required background (see precedence section above) — flagged to user, no action needed.
 6. Docker not installed on this machine — local Supabase dev (the documented zero-cost, local-first workflow) needs it. **User is installing Docker Desktop before Foundation-phase local dev work begins.** Migration SQL, project scaffolding, and provider code can all be written without Docker; only `supabase start` / actually running migrations locally is blocked until it's installed.
-7. **Monitor only, not blocking (2026-08-28)**: per-tenant WhatsApp/Instagram sending-reputation isolation — see `docs/decisions/2026-08-28-round-2-recommendations.md` item 4. No schema or code change now; log any per-business reputation signal the real providers expose once Build Phase 4 wires them up.
-8. **RESOLVED (2026-08-28)**: the "Bakers & Gift Businesses" source document was received same-day and fully seeded — see `docs/decisions/2026-08-28-bakers-gift-businesses.md`. `baker`/`gift` are `active = true` in `verticals`. Remaining work is Build Phase 6 end-to-end testing against all 10 combinations, not a content gap.
-9. **This machine runs another, unrelated project (ASSETMIND360) side-by-side.** The Next.js dev server was moved off port 3000 to **3100** (`package.json` dev/start scripts, `.claude/launch.json`) after a real collision. **Not yet checked**: whether the local Supabase stack's ports (54321 API, 54322 DB, 54323 Studio, 54324 mail, etc. — all Supabase CLI defaults) also collide with anything else on this machine. Ask the user before assuming this is fine, or before changing `supabase/config.toml`'s ports (which would need `.env.local` updated to match and a stack restart).
+7. **Monitor only, not blocking (2026-08-28)**: per-tenant WhatsApp/Instagram sending-reputation isolation — see ADR-0005's Notes section. No schema or code change now; log any per-business reputation signal the real providers expose once Build Phase 4 wires them up.
+8. **RESOLVED (2026-08-28)**: the "Bakers & Gift Businesses" source document was received same-day and fully seeded — see ADR-0010's Notes section. `baker`/`gift` are `active = true` in `verticals`. Remaining work is Build Phase 6 end-to-end testing against all 10 combinations, not a content gap.
+9. **This machine runs another, unrelated project (ASSETMIND360) side-by-side.** The Next.js dev server was moved off port 3000 to **3100** (`package.json` dev/start scripts, `.claude/launch.json`) after a real collision. **Not yet checked**: whether the local Supabase stack's ports (54321 API, 54322 DB, 54323 Studio, 54324 mail, etc. — all Supabase CLI defaults) also collide with anything else on this machine. Ask the user before assuming this is fine, or before changing `supabase/config.toml`'s ports (which would need `.env.local` updated to match and a stack restart). Tracked in `docs/decisions-register.md`.
 10. **RESOLVED (2026-08-29)**: admin-side owner-account creation is built — a "Create owner account" action on the business detail page (`app/api/admin/businesses/[id]/create-owner/route.ts`) creates the `auth.users` row and `business_memberships` row together, admin-provisioned only (no self-service signup, per V1 scope), with a generated password shown once for the admin to relay out of band (phone/WhatsApp, not email — these businesses are WhatsApp-first). The owner app itself now exists at `/app` (`app/app/`), gated by `lib/auth/owner-guard.ts`, reading exclusively through `createRlsClient()` — verified end-to-end with a real signed-in owner, including confirming by direct query that RLS returns zero rows for another business's data, not just that the UI doesn't show it. No mandatory MFA for owners (deliberate: RLS already scopes them to exactly one business, unlike admin's cross-tenant service-role access).
 
 ## What NOT to build in V1
 
-AI/NLP auto-replies, self-service signup, automated Razorpay subscription billing, in-app payment links, inventory/accounting/GST, advanced analytics, native mobile apps, team/multi-user accounts beyond what `business_memberships` already supports, catalogue integration, custom workflow builder, Facebook Messenger adapter, full-text search, value/results screen, contact activity timeline UI (log the data, skip the UI), universal search, polished admin UI (functional only), media message processing (log metadata, route to Needs Owner Attention), a dedicated job queue (pg_cron/pg_net is sufficient at V1 scale), **automated data export or a scheduled hard-delete pipeline** (round 4 rec. #14 — soft-delete via `businesses.deleted_at` only, indefinitely; explicit DPDP deletion requests are a manual admin action, not automated; this deliberately simplifies away Final-Architecture Section 11's originally-planned 30-day scheduled hard-delete job — not an oversight if a future session notices the job doesn't exist).
+AI/NLP auto-replies, self-service signup, automated Razorpay subscription billing, in-app payment links, inventory/accounting/GST, advanced analytics, native mobile apps, team/multi-user accounts beyond what `business_memberships` already supports, catalogue integration, custom workflow builder, Facebook Messenger adapter, full-text search, value/results screen, contact activity timeline UI (log the data, skip the UI), universal search, polished admin UI (functional only), media message processing (log metadata, route to Needs Owner Attention), a dedicated job queue (pg_cron/pg_net is sufficient at V1 scale), **automated data export or a scheduled hard-delete pipeline** (ADR-0011 — soft-delete via `businesses.deleted_at` only, indefinitely; explicit DPDP deletion requests are a manual admin action, not automated; this deliberately simplifies away Final-Architecture Section 11's originally-planned 30-day scheduled hard-delete job — not an oversight if a future session notices the job doesn't exist).

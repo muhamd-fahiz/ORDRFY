@@ -2,7 +2,7 @@
 -- on reminder_channel_consent for every role, including postgres itself here -- this is a
 -- BEFORE trigger, not an RLS policy, so RLS bypass (e.g. service_role in the real app) does
 -- not bypass it. DPDP Act compliance depends on this being a hard database-level guarantee,
--- not application discipline (docs/decisions/2026-08-28-round-2-recommendations.md item 2).
+-- not application discipline (docs/architecture/decisions/0003-append-only-reminder-channel-consent.md).
 begin;
 
 create or replace function pg_temp.assert(condition boolean, message text)

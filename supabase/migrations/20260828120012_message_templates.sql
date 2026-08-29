@@ -36,7 +36,7 @@ comment on table message_templates is
   'Notifications for Instagram. Instagram rows here just hold the reply_text used IF the '
   'window happens to be open at send time, or if the contact has granted WhatsApp consent '
   'the reminder routes there instead -- see '
-  'docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md.';
+  'docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md.';
 
 alter table message_templates enable row level security;
 

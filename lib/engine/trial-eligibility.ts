@@ -1,6 +1,7 @@
 /**
- * Trial-expiry graceful degradation (round 4 recommendation #16, docs/decisions/2026-08-28-
- * operational-loose-ends.md). Deliberately NOT a check against businesses.automation_paused
+ * Trial-expiry graceful degradation
+ * (docs/architecture/decisions/0013-trial-expiry-separate-from-kill-switch.md).
+ * Deliberately NOT a check against businesses.automation_paused
  * -- that flag stays exclusively the admin-toggled kill switch (Non-Negotiable Architecture
  * Rule 7). This is a separate, computed condition.
  */

@@ -26,11 +26,11 @@ comment on table contact_channel_identities is
   '(Ordrfy-Multi-Channel-Addendum.pdf Section 3).';
 
 comment on column contact_channel_identities.opted_out_at is
-  'India-fit addendum #11 (docs/decisions/2026-08-28-india-owner-fit.md): once set, the '
+  'ADR-0008 (docs/architecture/decisions/0008-whatsapp-opt-out-handling.md): once set, the '
   'reminder engine and the auto-reply engine must both treat this channel identity as '
   'send-ineligible -- one more condition in the same data-driven send-eligibility check as '
-  'the WhatsApp-consent and Instagram-window checks (docs/decisions/'
-  '2026-08-28-instagram-whatsapp-consent-routing.md), not a separate code path. Detection '
+  'the WhatsApp-consent and Instagram-window checks '
+  '(docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md), not a separate code path. Detection '
   'source: opt_out_keywords matched against an inbound message. Logged to activity_log so '
   'the owner understands why sends silently stopped, rather than assuming a bug.';
 

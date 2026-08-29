@@ -24,7 +24,7 @@ comment on table reminders is
 
 comment on column reminders.failure_reason is
   'channel_unsupported is the specific, expected outcome per the Instagram -> WhatsApp '
-  'consent-routing decision (docs/decisions/2026-08-28-instagram-whatsapp-consent-routing.md): '
+  'consent-routing decision (docs/architecture/decisions/0001-instagram-whatsapp-consent-routing.md): '
   'no WhatsApp consent granted AND the Instagram window is closed at send time, so no '
   'compliant automated send exists on either channel. The reminder engine inserts a row into '
   'owner_attention_queue (reason=reminder_channel_unsupported, reference_type=reminder) at '

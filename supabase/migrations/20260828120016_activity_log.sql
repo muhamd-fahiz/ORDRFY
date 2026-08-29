@@ -18,7 +18,7 @@ comment on table activity_log is
   'duplicating full message text where the text itself isn''t needed for the log''s purpose.';
 
 comment on column activity_log.actor_user_id is
-  'Added round 4 recommendation #17 (docs/decisions/2026-08-28-operational-loose-ends.md), '
+  'Added ADR-0014 (docs/architecture/decisions/0014-activity-log-actor-generalization.md), '
   'generalized beyond just payments: a first-class column rather than an ad-hoc jsonb key, '
   'since "who did this" recurs structurally across kill-switch pause/unpause (Hardening '
   'Addendum Section 4), admin vertical reassignment, channel reconnection (round 4 rec. '
