@@ -5,22 +5,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Admin panel only (Phase 1) -- stays as-is. The admin UI is deliberately
-        // functional-only (CLAUDE.md "what NOT to build in V1"), never restyled with the
-        // owner-app/marketing design system below.
-        brand: {
-          DEFAULT: "#0F5C5C",
-          foreground: "#FFFFFF",
-        },
-        status: {
-          paid: "#16A34A",
-          pending: "#D97706",
-          overdue: "#DC2626",
-          info: "#2563EB",
-        },
-
-        // Owner app + marketing site design system ("Carbon Pink" -- approved 2026-08-28).
-        // Namespaced separately from brand/status above so the two surfaces never collide.
+        // Product-wide design system ("Carbon Pink" -- approved 2026-08-28, extended to the
+        // admin panel 2026-08-30 per ADR-0021, superseding ADR-0016's "admin stays untouched"
+        // decision). The admin panel's original brand/status tokens were deleted, not kept
+        // alongside these -- they had no remaining callers once every admin page was
+        // restyled, and CLAUDE.md's structure discipline says obsolete things get removed,
+        // not left in "just in case."
         ink: {
           DEFAULT: "#14171F",
           70: "#3C3F49",

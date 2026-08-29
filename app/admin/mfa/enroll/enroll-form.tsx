@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/db/browser";
+import { Button } from "@/components/ui/Button";
 
 export function EnrollForm() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export function EnrollForm() {
   }
 
   if (loading) {
-    return <p className="text-sm text-neutral-500">Setting up...</p>;
+    return <p className="font-app text-sm text-ink-70">Setting up...</p>;
   }
 
   return (
@@ -91,12 +92,12 @@ export function EnrollForm() {
         <img src={qrCode} alt="Scan with your authenticator app" className="h-40 w-40 self-center" />
       )}
       {secret && (
-        <p className="text-center text-xs text-neutral-500">
-          Can&apos;t scan? Enter this key manually: <code className="font-mono">{secret}</code>
+        <p className="text-center font-app text-xs text-ink-70">
+          Can&apos;t scan? Enter this key manually: <code className="font-data">{secret}</code>
         </p>
       )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           6-digit code
           <input
             type="text"
@@ -106,17 +107,13 @@ export function EnrollForm() {
             autoComplete="one-time-code"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="rounded border border-neutral-300 px-3 py-2 tracking-widest"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-data tracking-widest text-ink"
           />
         </label>
-        {error && <p className="text-sm text-status-overdue">{error}</p>}
-        <button
-          type="submit"
-          disabled={submitting || !factorId}
-          className="rounded bg-brand px-3 py-2 text-sm font-medium text-brand-foreground disabled:opacity-50"
-        >
+        {error && <p className="font-app text-sm text-attention">{error}</p>}
+        <Button type="submit" disabled={submitting || !factorId}>
           {submitting ? "Verifying..." : "Verify and continue"}
-        </button>
+        </Button>
       </form>
     </div>
   );

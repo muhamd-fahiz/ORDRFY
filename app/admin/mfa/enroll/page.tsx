@@ -21,8 +21,8 @@ export default async function MfaEnrollPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-4">
       <div>
-        <h1 className="text-xl font-semibold">Set up two-factor authentication</h1>
-        <p className="text-sm text-neutral-500">
+        <h1 className="font-display text-xl font-bold">Set up two-factor authentication</h1>
+        <p className="font-app text-sm text-ink-70">
           Admin accounts require an authenticator app (e.g. Google Authenticator, Authy) before
           you can continue.
         </p>

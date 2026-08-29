@@ -21,8 +21,8 @@ export default async function MfaChallengePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-4">
       <div>
-        <h1 className="text-xl font-semibold">Enter your authenticator code</h1>
-        <p className="text-sm text-neutral-500">Open your authenticator app and enter the current code.</p>
+        <h1 className="font-display text-xl font-bold">Enter your authenticator code</h1>
+        <p className="font-app text-sm text-ink-70">Open your authenticator app and enter the current code.</p>
       </div>
       <ChallengeForm />
     </main>

@@ -27,11 +27,11 @@ export default async function AdminLoginPage({
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-4">
       <div>
-        <h1 className="text-xl font-semibold">Ordrfy Admin</h1>
-        <p className="text-sm text-neutral-500">Sign in with your admin account.</p>
+        <h1 className="font-display text-xl font-bold">Ordrfy Admin</h1>
+        <p className="font-app text-sm text-ink-70">Sign in with your admin account.</p>
       </div>
       {error === "not_admin" && (
-        <p className="rounded border border-status-overdue/30 bg-status-overdue/5 p-2 text-sm text-status-overdue">
+        <p className="rounded-lg bg-attention-soft p-2 font-app text-sm text-attention">
           That account is not an admin account.
         </p>
       )}

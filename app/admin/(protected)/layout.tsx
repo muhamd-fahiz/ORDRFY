@@ -10,18 +10,18 @@ export default async function ProtectedAdminLayout({
   const session = await requireReadyAdminSession();
 
   return (
-    <div className="min-h-screen">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-4 py-3">
-        <nav className="flex flex-wrap items-center gap-4 text-sm">
-          <Link href="/admin/businesses" className="font-semibold">
+    <div>
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-15 px-4 py-3">
+        <nav className="flex flex-wrap items-center gap-4">
+          <Link href="/admin/businesses" className="font-display text-sm font-bold">
             Ordrfy Admin
           </Link>
-          <Link href="/admin/businesses" className="text-neutral-600 hover:text-neutral-900">
+          <Link href="/admin/businesses" className="font-app text-xs text-ink-70 hover:text-ink">
             Businesses
           </Link>
         </nav>
-        <div className="flex items-center gap-3 text-sm text-neutral-500">
-          <span>{session.adminName}</span>
+        <div className="flex items-center gap-3">
+          <span className="font-app text-xs text-ink-40">{session.adminName}</span>
           <SignOutButton />
         </div>
       </header>

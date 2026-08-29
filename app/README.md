@@ -10,10 +10,14 @@ together, not one folder.
 Placeholder only (`page.tsx` is the unmodified scaffold). Not started as real work.
 
 ### `admin/` — internal ops panel
-Gated by `admin_users` membership + mandatory TOTP MFA (`lib/auth/admin-guard.ts`).
-Deliberately **functional-only, never polished** — see CLAUDE.md's "what NOT to build in
-V1" list. Reads/writes go through `createServiceRoleClient()` after the guard verifies the
-caller, since an admin session needs to reach every tenant's data, not just one.
+Gated by `admin_users` membership + mandatory TOTP MFA (`lib/auth/admin-guard.ts`). Uses the
+same Carbon Pink tokens/fonts/`components/ui/` library as the owner app (`app/admin/layout.tsx`
+wires the font variables) — restyled 2026-08-30 per
+[ADR-0021](../docs/architecture/decisions/0021-carbon-pink-extended-to-admin-panel.md),
+reversing ADR-0016's original "admin stays functional-only, unstyled" call. Purely visual:
+no functionality, route, or auth check changed. Reads/writes go through
+`createServiceRoleClient()` after the guard verifies the caller, since an admin session needs
+to reach every tenant's data, not just one.
 
 - `admin/login/`, `admin/mfa/enroll/`, `admin/mfa/challenge/` — the sign-in state machine.
 - `admin/(protected)/businesses/` — list, detail, create. The business detail page's
@@ -59,9 +63,10 @@ that distinction is load-bearing, not stylistic.
 
 ## Root files
 
-- `layout.tsx` — the root layout. Deliberately minimal (no fonts, no design tokens) — the
-  Carbon Pink design system is scoped to `app/(protected)/` and `design-preview/` via their
-  own layouts, never applied here, so the admin panel stays visually untouched.
+- `layout.tsx` — the root layout. Deliberately minimal (no fonts, no design tokens) — each
+  surface wires the Carbon Pink design system itself via its own layout instead
+  (`app/admin/layout.tsx`, `app/app/(protected)/layout.tsx`, `app/design-preview/layout.tsx`),
+  since the marketing site at this route's own level still has no design direction yet.
 - `robots.ts` — host-aware: disallows `/admin` and `/app` on the shared host today, will
   disallow everything once `admin.`/`app.` become real separate hosts. Defense in depth
   only — the actual security boundary is the auth guards above, never "the URL is hidden."

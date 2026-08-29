@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 export function CreateOwnerForm({ businessId, defaultEmail }: { businessId: string; defaultEmail: string }) {
   const router = useRouter();
@@ -39,48 +40,41 @@ export function CreateOwnerForm({ businessId, defaultEmail }: { businessId: stri
 
   if (result) {
     return (
-      <div className="rounded border border-status-paid/30 bg-status-paid/5 p-3 text-sm">
-        <p className="font-medium">Owner account created.</p>
-        <p className="mt-1 text-neutral-600">
+      <div className="rounded-lg bg-confirmed-soft p-3 font-app text-sm text-ink">
+        <p className="font-semibold text-confirmed">Owner account created.</p>
+        <p className="mt-1 text-ink-70">
           Give these to the business owner now (by phone or WhatsApp) -- this password is shown only once
           and is not stored anywhere.
         </p>
-        <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 font-mono text-xs">
-          <dt className="text-neutral-500">Email</dt>
+        <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 font-data text-xs">
+          <dt className="text-ink-40">Email</dt>
           <dd>{result.email}</dd>
-          <dt className="text-neutral-500">Password</dt>
+          <dt className="text-ink-40">Password</dt>
           <dd>{result.temporaryPassword}</dd>
         </dl>
-        <button
-          onClick={() => router.refresh()}
-          className="mt-3 rounded bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground"
-        >
+        <Button size="sm" className="mt-3" onClick={() => router.refresh()}>
           I&apos;ve copied this, done
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 text-sm">
-      <label className="flex flex-col gap-1">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2 font-app text-sm">
+      <label className="flex flex-col gap-1 text-ink-70">
         Owner&apos;s email
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded border border-neutral-300 px-2 py-1"
+          className="rounded-lg border border-ink-15 px-2 py-1 text-ink"
         />
       </label>
-      {error && <p className="text-status-overdue">{error}</p>}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-fit rounded bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground disabled:opacity-50"
-      >
+      {error && <p className="text-attention">{error}</p>}
+      <Button type="submit" size="sm" className="w-fit" disabled={submitting}>
         {submitting ? "Creating..." : "Create owner account"}
-      </button>
+      </Button>
     </form>
   );
 }

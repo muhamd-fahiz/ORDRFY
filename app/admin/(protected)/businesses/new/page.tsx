@@ -1,4 +1,5 @@
 import { createRlsClient } from "@/lib/db/server";
+import { Button } from "@/components/ui/Button";
 import { createBusiness } from "./actions";
 
 export default async function NewBusinessPage() {
@@ -14,17 +15,17 @@ export default async function NewBusinessPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-md">
-      <h1 className="text-lg font-semibold">New Business</h1>
+    <div className="flex max-w-md flex-col gap-4">
+      <h1 className="font-display text-lg font-bold">New Business</h1>
       <form action={createBusiness} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Business name
-          <input name="name" required className="rounded border border-neutral-300 px-3 py-2" />
+          <input name="name" required className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink" />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Vertical
-          <select name="vertical" required className="rounded border border-neutral-300 px-3 py-2">
+          <select name="vertical" required className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink">
             <option value="">Select a vertical...</option>
             {verticals.map((v) => (
               <option key={v.key} value={v.key}>
@@ -34,40 +35,40 @@ export default async function NewBusinessPage() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Phone
-          <input name="phone" className="rounded border border-neutral-300 px-3 py-2" />
+          <input name="phone" className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink" />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Email
-          <input name="email" type="email" className="rounded border border-neutral-300 px-3 py-2" />
+          <input name="email" type="email" className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink" />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Timezone
           <input
             name="timezone"
             defaultValue="Asia/Kolkata"
-            className="rounded border border-neutral-300 px-3 py-2"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Preferred language
           <input
             name="preferred_language"
             defaultValue="en"
-            className="rounded border border-neutral-300 px-3 py-2"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Subscription status
           <select
             name="subscription_status"
             defaultValue="trial"
-            className="rounded border border-neutral-300 px-3 py-2"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink"
           >
             <option value="trial">Trial</option>
             <option value="active">Active</option>
@@ -75,12 +76,9 @@ export default async function NewBusinessPage() {
           </select>
         </label>
 
-        <button
-          type="submit"
-          className="mt-2 rounded bg-brand px-3 py-2 text-sm font-medium text-brand-foreground"
-        >
+        <Button type="submit" className="mt-2 w-fit">
           Create Business
-        </button>
+        </Button>
       </form>
     </div>
   );

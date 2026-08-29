@@ -1,6 +1,9 @@
 # ADR-0016: "Carbon Pink" Design Tokens, Namespaced Separately From the Admin Panel
 
-**Status:** Accepted (2026-08-29)
+**Status:** Superseded by [ADR-0021](0021-carbon-pink-extended-to-admin-panel.md) (2026-08-30) for the
+namespacing/admin-untouched decision below. The token set, component library, and font
+wiring this ADR introduced are still exactly as described — only the "admin panel stays
+untouched" boundary changed.
 
 ## Context
 

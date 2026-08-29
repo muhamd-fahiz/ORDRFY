@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
         Email
         <input
           type="email"
@@ -48,10 +49,10 @@ export function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded border border-neutral-300 px-3 py-2"
+          className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink"
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
         Password
         <input
           type="password"
@@ -59,17 +60,13 @@ export function LoginForm() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded border border-neutral-300 px-3 py-2"
+          className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink"
         />
       </label>
-      {error && <p className="text-sm text-status-overdue">{error}</p>}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded bg-brand px-3 py-2 text-sm font-medium text-brand-foreground disabled:opacity-50"
-      >
+      {error && <p className="font-app text-sm text-attention">{error}</p>}
+      <Button type="submit" disabled={submitting}>
         {submitting ? "Signing in..." : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -73,14 +73,16 @@ Verified means actually tested against the live local stack — real browser ses
 - ✅ **Vertical configuration** — real `pipeline_stages`/`internal_reply_rules`/
   `message_templates` content for all 5 verticals (Fashion, Tutor, Service, Baker, Gift)
 - ✅ **Owner app, in progress** — Carbon Pink design system
-  ([ADR-0016](./docs/architecture/decisions/0016-carbon-pink-design-tokens.md)), a small
-  component library (`components/ui/`), one real screen (Today: contacts, pipeline stage,
-  attention queue, real "Review"/"Send Reminder" mutations —
-  [ADR-0019](./docs/architecture/decisions/0019-today-view-mutation-design.md))
+  ([ADR-0016](./docs/architecture/decisions/0016-carbon-pink-design-tokens.md), extended to
+  the admin panel too —
+  [ADR-0021](./docs/architecture/decisions/0021-carbon-pink-extended-to-admin-panel.md)), a
+  small component library (`components/ui/`), real screens (Today, Contacts List, Contact
+  Detail, Needs Attention, Payments) with real mutations (stage changes, "Review"/"Send
+  Reminder", Mark as Paid — [ADR-0019](./docs/architecture/decisions/0019-today-view-mutation-design.md))
 - ✅ **CI** — every push runs the full local Supabase stack, RLS/trigger SQL tests, unit
   tests, typecheck, lint, and build (`.github/workflows/ci.yml`)
-- ⬜ **Owner app, remaining screens** — Today is the only real screen so far; contacts,
-  payments, and other workflows are still ahead
+- ⬜ **Owner app, remaining screens** — Today, Contacts List, Contact Detail, Needs
+  Attention, and Payments exist; settings and any remaining workflows are still ahead
 - ⬜ **Launch acceptance, mock-verified** — all 10 vertical×channel combinations tested
   end-to-end against the mock providers, deliberately *before* any real provider work
   ([ADR-0020](./docs/architecture/decisions/0020-mock-verified-before-real-providers.md))
