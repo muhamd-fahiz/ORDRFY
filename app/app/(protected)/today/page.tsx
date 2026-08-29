@@ -23,7 +23,7 @@ export default async function TodayPage() {
 
       {today.unresolvedAttentionCount > 0 && (
         <div className="mb-3">
-          <AttentionBanner count={today.unresolvedAttentionCount} />
+          <AttentionBanner count={today.unresolvedAttentionCount} href="/app/attention" />
         </div>
       )}
 

@@ -17,6 +17,9 @@ export default async function ProtectedOwnerLayout({ children }: { children: Rea
           <Link href="/app/contacts" className="font-app text-xs text-ink-70 hover:text-ink">
             Contacts
           </Link>
+          <Link href="/app/attention" className="font-app text-xs text-ink-70 hover:text-ink">
+            Attention
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           <span className="font-app text-xs text-ink-40">{session.businessName}</span>
