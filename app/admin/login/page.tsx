@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getAdminSessionState } from "@/lib/auth/admin-guard";
+import { AuthPageShell } from "@/components/ui/AuthPageShell";
 import { LoginForm } from "./login-form";
 
 export default async function AdminLoginPage({
@@ -25,9 +26,9 @@ export default async function AdminLoginPage({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-4">
+    <AuthPageShell>
       <div>
-        <h1 className="font-display text-xl font-bold">Ordrfy Admin</h1>
+        <h1 className="font-display text-xl font-bold text-ink">Ordrfy Admin</h1>
         <p className="font-app text-sm text-ink-70">Sign in with your admin account.</p>
       </div>
       {error === "not_admin" && (
@@ -36,6 +37,6 @@ export default async function AdminLoginPage({
         </p>
       )}
       <LoginForm />
-    </main>
+    </AuthPageShell>
   );
 }

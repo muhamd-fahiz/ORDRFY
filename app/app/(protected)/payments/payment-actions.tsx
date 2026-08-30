@@ -8,6 +8,7 @@ export function PaymentActions({ paymentId }: { paymentId: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
 
   async function handleMarkPaid() {
     setPending(true);
@@ -19,7 +20,15 @@ export function PaymentActions({ paymentId }: { paymentId: string }) {
       setError(body.error ?? "Something went wrong.");
       return;
     }
-    router.refresh();
+    // Shown briefly before router.refresh() re-renders this card as "paid" (which removes
+    // this action entirely) -- without it, marking a payment paid gave no feedback beyond
+    // the button silently vanishing, easy to misread as "did that even work?".
+    setConfirmed(true);
+    setTimeout(() => router.refresh(), 900);
+  }
+
+  if (confirmed) {
+    return <p className="font-app text-xs font-semibold text-confirmed">Marked as paid.</p>;
   }
 
   return (

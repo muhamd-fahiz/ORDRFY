@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireReadyAdminSession } from "@/lib/auth/admin-guard";
 import { Logo } from "@/components/ui/Logo";
+import { Copyright } from "@/components/ui/Copyright";
 import { SignOutButton } from "./sign-out-button";
 
 export default async function ProtectedAdminLayout({
@@ -30,6 +31,9 @@ export default async function ProtectedAdminLayout({
         </div>
       </header>
       <main className="p-4">{children}</main>
+      <footer className="px-4 py-6">
+        <Copyright tone="on-paper" />
+      </footer>
     </div>
   );
 }

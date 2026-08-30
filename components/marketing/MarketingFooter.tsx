@@ -1,4 +1,5 @@
 import { Logo } from "@/components/ui/Logo";
+import { Copyright } from "@/components/ui/Copyright";
 
 const FOOTER_LINKS = [
   { href: "#how", label: "How it works" },
@@ -19,7 +20,10 @@ export function MarketingFooter() {
             </a>
           ))}
         </div>
-        <div className="font-data text-[11px] tracking-[0.08em] text-paper/35">ORDRFY.IN · MADE IN INDIA</div>
+        <div className="flex flex-col items-end gap-1">
+          <div className="font-data text-[11px] tracking-[0.08em] text-paper/35">ORDRFY.IN · MADE IN INDIA</div>
+          <Copyright tone="on-ink" />
+        </div>
       </div>
     </footer>
   );

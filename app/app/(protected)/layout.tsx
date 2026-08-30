@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireReadyOwnerSession } from "@/lib/auth/owner-guard";
 import { ordrfyFontVariables } from "@/lib/design/fonts";
 import { Logo } from "@/components/ui/Logo";
+import { Copyright } from "@/components/ui/Copyright";
 import { SignOutButton } from "./sign-out-button";
 
 export default async function ProtectedOwnerLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +37,9 @@ export default async function ProtectedOwnerLayout({ children }: { children: Rea
         </div>
       </header>
       <main>{children}</main>
+      <footer className="px-4 py-6">
+        <Copyright tone="on-paper" />
+      </footer>
     </div>
   );
 }

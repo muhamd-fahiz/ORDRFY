@@ -71,12 +71,29 @@ Tagline: "Chats in. Orders out."
    npm run start
    ```
 
-   Known limitation as of 2026-08-30: `NEXT_PUBLIC_SUPABASE_URL` points at
-   `127.0.0.1:54321`, which is baked into the browser bundle — a tester on a different
-   machine has their *own* `127.0.0.1`, not yours. This breaks Sign Out (and, for an admin
-   session specifically, MFA enroll/challenge) for anyone testing remotely. Not yet
-   resolved — see the project owner's decision on the two fix approaches before relying on
-   sign-out working for remote testers.
+   `NEXT_PUBLIC_SUPABASE_URL` points at `127.0.0.1:54321`, which is baked into the browser
+   bundle — a tester on a different machine has their *own* `127.0.0.1`, not yours. This
+   breaks Sign Out (and, for an admin session specifically, MFA enroll/challenge) for
+   anyone testing remotely, unless Supabase's own gateway is also reachable from their
+   browser. **Decided (2026-08-30): run a second Cloudflare Tunnel for Supabase's Kong
+   gateway** rather than moving sign-out to a server route — friends only ever get owner
+   accounts (no MFA path involved), and this is a temporary testing setup, not a permanent
+   topology.
+
+   ```bash
+   # Terminal 1: the app itself
+   cloudflared tunnel --url http://localhost:3100
+
+   # Terminal 2: Supabase's Kong gateway (Auth/REST/Storage/Realtime all sit behind it)
+   cloudflared tunnel --url http://localhost:54321
+   ```
+
+   Then, **before running `npm run build`**, set `NEXT_PUBLIC_SUPABASE_URL` in `.env.local`
+   to terminal 2's `https://*.trycloudflare.com` URL (it's baked in at build time, so this
+   has to happen before the build, not after) and add that same URL to
+   `supabase/config.toml`'s `additional_redirect_urls` so password-reset links still
+   validate. Revert `.env.local` back to `http://127.0.0.1:54321` once testing is done —
+   don't leave a build pointed at a temporary tunnel URL lying around.
 
 ## Current status (2026-08-30)
 

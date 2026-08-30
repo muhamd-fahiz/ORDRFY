@@ -6,17 +6,32 @@ import { ContactCard } from "@/components/ui/ContactCard";
 import { formatRelativeTime } from "@/lib/design/format-time";
 import type { ContactsListData } from "@/lib/data/contacts-list";
 
-// Filtering by pipeline stage, not text search (full-text/universal search are both
-// explicitly out of V1 scope) -- structured data the product already has, applied entirely
-// client-side since the whole roster is already fetched, so a filter tap is instant with no
-// round trip.
+// Stage filter (structured data the product already has) plus a plain substring search over
+// name/phone/handle -- both applied client-side over the whole already-fetched roster, no
+// round trip, no search index. Not the full-text/universal search CLAUDE.md's "what NOT to
+// build" list excludes -- that's about a dedicated search system, not filtering an array
+// that's already in memory the same way the stage chips already do.
 export function ContactsList({ stages, contacts }: ContactsListData) {
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
-  const visibleContacts = selectedStageId ? contacts.filter((c) => c.stageId === selectedStageId) : contacts;
+  const normalizedQuery = query.trim().toLowerCase();
+  // Stage chip counts reflect the current search too, so they stay meaningful together --
+  // only the stage selection itself stays out of this pass, since that's what the chips represent.
+  const searchFilteredContacts = normalizedQuery ? contacts.filter((c) => c.searchText.includes(normalizedQuery)) : contacts;
+  const visibleContacts = selectedStageId
+    ? searchFilteredContacts.filter((c) => c.stageId === selectedStageId)
+    : searchFilteredContacts;
 
   return (
     <div>
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search by name or phone"
+        className="mb-3 w-full rounded-lg border border-ink-15 bg-paper-raised px-3 py-2 font-app text-sm text-ink placeholder:text-ink-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-strong"
+      />
       <div className="mb-4 flex flex-wrap gap-2">
         <button
           type="button"
@@ -25,10 +40,10 @@ export function ContactsList({ stages, contacts }: ContactsListData) {
             selectedStageId === null ? "bg-pink-strong text-paper-raised" : "bg-ink-15 text-ink-70 hover:bg-ink-15/70"
           }`}
         >
-          All ({contacts.length})
+          All ({searchFilteredContacts.length})
         </button>
         {stages.map((stage) => {
-          const count = contacts.filter((c) => c.stageId === stage.id).length;
+          const count = searchFilteredContacts.filter((c) => c.stageId === stage.id).length;
           if (count === 0) return null;
           return (
             <button
@@ -46,7 +61,9 @@ export function ContactsList({ stages, contacts }: ContactsListData) {
       </div>
 
       {visibleContacts.length === 0 ? (
-        <p className="font-app text-sm text-ink-70">No contacts in this stage.</p>
+        <p className="font-app text-sm text-ink-70">
+          {normalizedQuery ? "No contacts match that search." : "No contacts in this stage."}
+        </p>
       ) : (
         <div className="flex flex-col gap-2">
           {visibleContacts.map((contact) => (

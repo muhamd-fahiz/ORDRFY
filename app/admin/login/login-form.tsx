@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
 export function LoginForm() {
@@ -63,6 +64,9 @@ export function LoginForm() {
           className="rounded-lg border border-ink-15 px-3 py-2 font-app text-ink"
         />
       </label>
+      <Link href="/admin/forgot-password" className="-mt-1 self-end font-app text-xs text-ink-70 underline-offset-2 hover:underline">
+        Forgot password?
+      </Link>
       {error && <p className="font-app text-sm text-attention">{error}</p>}
       <Button type="submit" disabled={submitting}>
         {submitting ? "Signing in..." : "Sign in"}

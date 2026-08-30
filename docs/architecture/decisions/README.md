@@ -33,6 +33,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0022](0022-marketing-site-carbon-pink-extension.md) | Marketing site built on Carbon Pink, with four new tokens (ink.raised, paper.warm, pink.hover, highlight) | Accepted |
 | [0023](0023-launch-acceptance-webhook-driven-pass.md) | Launch Acceptance verified via real webhook payloads, not fixture inserts -- two real gaps found and fixed first | Accepted |
 | [0024](0024-pre-friend-testing-ux-fixes.md) | Pre-friend-testing UX fixes -- marketing login link, dead CTA fix, error/404 pages, clearer empty states | Accepted |
+| [0025](0025-auth-page-fixes-and-approved-ux-items.md) | Auth page layout/logo fixes, password reset built end-to-end, contact search, Mark-as-Paid confirmation | Accepted |
 
 ## Migration note
 

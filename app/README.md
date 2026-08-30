@@ -61,6 +61,10 @@ part of the product.
 - `admin/login/`, `app/login/` — rate-limited password sign-in for each surface
   (`lib/rate-limit/`), separate buckets so one surface's login attempts can't exhaust the
   other's budget.
+- `admin/forgot-password/`, `app/forgot-password/` — rate-limited password-reset requests
+  (ADR-0025), own named buckets per surface. Always returns the same generic response
+  regardless of whether the email matches an account -- never branch this on Supabase's
+  actual result, that's the anti-enumeration property `resetPasswordForEmail()` itself relies on.
 - `admin/businesses/[id]/create-owner/` — provisions an owner account (ADR-0017).
 - `app/attention/resolve/`, `app/reminders/send-now/` — the Today view's real mutations
   (ADR-0019).
