@@ -32,6 +32,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0021](0021-carbon-pink-extended-to-admin-panel.md) | Extend Carbon Pink to the admin panel, reversing ADR-0016's "admin stays untouched" call | Accepted |
 | [0022](0022-marketing-site-carbon-pink-extension.md) | Marketing site built on Carbon Pink, with four new tokens (ink.raised, paper.warm, pink.hover, highlight) | Accepted |
 | [0023](0023-launch-acceptance-webhook-driven-pass.md) | Launch Acceptance verified via real webhook payloads, not fixture inserts -- two real gaps found and fixed first | Accepted |
+| [0024](0024-pre-friend-testing-ux-fixes.md) | Pre-friend-testing UX fixes -- marketing login link, dead CTA fix, error/404 pages, clearer empty states | Accepted |
 
 ## Migration note
 

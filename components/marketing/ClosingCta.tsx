@@ -17,16 +17,16 @@ export function ClosingCta() {
         </div>
         <div className="flex w-full max-w-[380px] flex-col gap-3">
           <a
-            href="#start"
+            href="mailto:hello@ordrfy.in?subject=Early%20access%20request"
             className="rounded-md bg-ink px-6 py-[18px] text-center font-display text-[15px] font-bold text-paper-warm transition-colors hover:bg-black"
           >
-            Start free
+            Request Early Access
           </a>
           <a
-            href="#start"
+            href="mailto:hello@ordrfy.in?subject=Question%20about%20Ordrfy"
             className="rounded-md border border-paper-warm/60 px-6 py-[18px] text-center font-display text-[15px] font-semibold text-paper-warm transition-colors hover:border-paper-warm"
           >
-            Message us on WhatsApp
+            Email us
           </a>
           <div className="flex items-center justify-center gap-2.5 font-data text-[11px] tracking-[0.08em] text-paper-warm/75">
             <span className="grid h-[19px] w-[19px] flex-none place-items-center rounded-full bg-ink leading-none" aria-hidden="true">

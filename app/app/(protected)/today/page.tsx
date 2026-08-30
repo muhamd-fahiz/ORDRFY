@@ -28,7 +28,9 @@ export default async function TodayPage() {
       )}
 
       {today.contacts.length === 0 ? (
-        <p className="font-app text-sm text-ink-70">No contacts yet.</p>
+        <p className="font-app text-sm text-ink-70">
+          No customer messages yet. Once WhatsApp or Instagram is connected, new chats will show up here automatically.
+        </p>
       ) : (
         <div className="flex flex-col gap-2">
           {today.contacts.map((contact) => (

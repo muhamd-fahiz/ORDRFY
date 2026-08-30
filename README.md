@@ -49,8 +49,8 @@ Tagline: "Chats in. Orders out."
    Runs on port **3100**, not the Next.js default 3000 — another project on this machine
    already uses 3000. `npm run start` uses the same port.
 
-6. **(Optional) Seed realistic dev-preview data** for the owner app — three businesses
-   across different verticals with varied contacts and attention-queue states:
+6. **(Optional) Seed realistic dev-preview data** for the owner app — one business per
+   vertical (all 5), varied contacts and attention-queue states, both channels connected:
 
    ```bash
    node scripts/seed-dev-preview-data.mjs
@@ -59,6 +59,24 @@ Tagline: "Chats in. Orders out."
    Deliberately separate from `supabase/seed.sql` (which is reference/config content, not
    demo data) and safe to re-run — see the script's header comment for one real gotcha
    around owner accounts created against its fixture businesses.
+
+7. **Sharing with external testers (e.g. Cloudflare Tunnel)**: always tunnel a **production
+   build**, never `npm run dev`. Dev mode blocks cross-origin requests to its own JS/HMR
+   resources by default (`allowedDevOrigins` in `next.config.mjs`, unset here) — confirmed
+   this actually breaks under a different origin, not just a theoretical risk — and dev mode
+   shows full stack-trace error overlays, not something to expose externally.
+
+   ```bash
+   npm run build
+   npm run start
+   ```
+
+   Known limitation as of 2026-08-30: `NEXT_PUBLIC_SUPABASE_URL` points at
+   `127.0.0.1:54321`, which is baked into the browser bundle — a tester on a different
+   machine has their *own* `127.0.0.1`, not yours. This breaks Sign Out (and, for an admin
+   session specifically, MFA enroll/challenge) for anyone testing remotely. Not yet
+   resolved — see the project owner's decision on the two fix approaches before relying on
+   sign-out working for remote testers.
 
 ## Current status (2026-08-30)
 
