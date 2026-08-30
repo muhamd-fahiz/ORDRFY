@@ -1,6 +1,7 @@
 import { requireReadyOwnerSession } from "@/lib/auth/owner-guard";
 import { createRlsClient } from "@/lib/db/server";
 import { getContactsList } from "@/lib/data/contacts-list";
+import { formatRelativeTime } from "@/lib/design/format-time";
 import { ContactsList } from "./contacts-list";
 
 export default async function ContactsListPage() {
@@ -16,7 +17,15 @@ export default async function ContactsListPage() {
           No contacts yet. They&apos;ll appear here as soon as a customer messages you on WhatsApp or Instagram.
         </p>
       ) : (
-        <ContactsList stages={data.stages} contacts={data.contacts} />
+        // formatRelativeTime() reads Date.now() -- computed here, once, on the server, and
+        // passed down as a plain string. Calling it directly inside ContactsList (a client
+        // component) instead would re-run it during browser hydration too, using the
+        // browser's own clock -- a real hydration mismatch whenever that clock disagrees
+        // with the server's by even a little, confirmed happening on a real phone.
+        <ContactsList
+          stages={data.stages}
+          contacts={data.contacts.map((c) => ({ ...c, timeLabel: formatRelativeTime(c.lastMessageAt) }))}
+        />
       )}
     </div>
   );

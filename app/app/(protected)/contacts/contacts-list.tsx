@@ -3,15 +3,21 @@
 import { useState } from "react";
 import { Chip } from "@/components/ui/Chip";
 import { ContactCard } from "@/components/ui/ContactCard";
-import { formatRelativeTime } from "@/lib/design/format-time";
-import type { ContactsListData } from "@/lib/data/contacts-list";
+import type { ContactsListData, ContactsListRow } from "@/lib/data/contacts-list";
+
+interface ContactsListProps {
+  stages: ContactsListData["stages"];
+  // timeLabel is added by the server page, not computed here -- see contacts/page.tsx's
+  // comment for why formatRelativeTime() can never run inside this client component.
+  contacts: (ContactsListRow & { timeLabel: string })[];
+}
 
 // Stage filter (structured data the product already has) plus a plain substring search over
 // name/phone/handle -- both applied client-side over the whole already-fetched roster, no
 // round trip, no search index. Not the full-text/universal search CLAUDE.md's "what NOT to
 // build" list excludes -- that's about a dedicated search system, not filtering an array
 // that's already in memory the same way the stage chips already do.
-export function ContactsList({ stages, contacts }: ContactsListData) {
+export function ContactsList({ stages, contacts }: ContactsListProps) {
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
@@ -71,7 +77,7 @@ export function ContactsList({ stages, contacts }: ContactsListData) {
               key={contact.id}
               name={contact.name}
               href={`/app/contacts/${contact.id}`}
-              timeLabel={formatRelativeTime(contact.lastMessageAt)}
+              timeLabel={contact.timeLabel}
               message={contact.lastMessage}
               stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No stage set"}</Chip>}
             />
