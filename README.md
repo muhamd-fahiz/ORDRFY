@@ -90,9 +90,12 @@ Verified means actually tested against the live local stack — real browser ses
   deliberately scoped to real `businesses` profile fields only, since the other documented
   `business_settings` keys (reminder timing, instant-ack, digest frequency) have no engine
   consumer yet — see `docs/decisions-register.md`
-- ⬜ **Launch acceptance, mock-verified** — all 10 vertical×channel combinations tested
-  end-to-end against the mock providers, deliberately *before* any real provider work
-  ([ADR-0020](./docs/architecture/decisions/0020-mock-verified-before-real-providers.md))
+- ✅ **Launch acceptance, mock-verified** — all 10 vertical×channel combinations, a
+  cross-vertical regression check, a multi-channel no-auto-merge check, and opt-out, run
+  through the real `POST /api/webhooks/{whatsapp,instagram}` routes (not fixture inserts,
+  `scripts/launch-acceptance-check.mjs`) — 14/14 passed, before any real provider work
+  ([ADR-0020](./docs/architecture/decisions/0020-mock-verified-before-real-providers.md),
+  [ADR-0023](./docs/architecture/decisions/0023-launch-acceptance-webhook-driven-pass.md))
 - ⬜ **Security hardening pass** — full automated test suite from the Hardening Addendum
 - ⬜ **Real provider integration, deliberately last** — Interakt (WhatsApp), Instagram
   Graph API — still mock providers only (`WHATSAPP_PROVIDER=mock`,

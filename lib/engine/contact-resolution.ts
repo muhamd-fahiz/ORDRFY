@@ -23,7 +23,7 @@ export async function resolveOrCreateContact(
   businessId: string,
   channel: ChannelName,
   providerUserId: string,
-  extra: { phoneNumber?: string | null; displayHandle?: string | null },
+  extra: { phoneNumber?: string | null; displayHandle?: string | null; displayName?: string | null },
 ): Promise<ResolvedContact> {
   const { data: channelRow, error: channelError } = await supabase
     .from("channels")
@@ -67,7 +67,12 @@ export async function resolveOrCreateContact(
 
   const { data: contact, error: contactError } = await supabase
     .from("contacts")
-    .insert({ business_id: businessId, pipeline_stage_id: initialStageId, last_inbound_at: new Date().toISOString() })
+    .insert({
+      business_id: businessId,
+      pipeline_stage_id: initialStageId,
+      last_inbound_at: new Date().toISOString(),
+      name: extra.displayName ?? null,
+    })
     .select("id")
     .single();
   if (contactError) throw new Error(`Contact creation failed: ${contactError.message}`);

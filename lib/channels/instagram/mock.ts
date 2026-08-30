@@ -46,6 +46,9 @@ export class MockInstagramProvider implements MessagingChannelProvider {
       receivedAt: new Date(),
       phoneNumber: null,
       displayHandle: payload.displayHandle ?? null,
+      // Instagram's real Messaging webhook doesn't include a separate display name --
+      // reuse the handle already captured above rather than inventing a second field.
+      displayName: payload.displayHandle ?? null,
     };
   }
 

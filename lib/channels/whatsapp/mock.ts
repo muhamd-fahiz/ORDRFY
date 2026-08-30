@@ -43,6 +43,7 @@ export class MockWhatsAppProvider implements MessagingChannelProvider {
       receivedAt: new Date(),
       phoneNumber: payload.fromPhoneNumber,
       displayHandle: null,
+      displayName: payload.displayName ?? null,
     };
   }
 

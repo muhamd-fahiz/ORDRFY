@@ -56,6 +56,7 @@ export async function processInboundMessage(
   const contact = await resolveOrCreateContact(supabase, businessId, normalized.channel, normalized.providerUserId, {
     phoneNumber: normalized.phoneNumber,
     displayHandle: normalized.displayHandle,
+    displayName: normalized.displayName,
   });
 
   const { data: channelRow } = await supabase

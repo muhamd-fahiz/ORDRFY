@@ -27,6 +27,12 @@ export interface NormalizedInboundMessage {
   phoneNumber: string | null;
   /** Populated only for Instagram (@handle), when available in the payload. */
   displayHandle: string | null;
+  /** The customer's self-set display name, when the provider's inbound payload includes
+   *  one (WhatsApp Business API webhooks include `contacts[].profile.name`). Used to seed
+   *  `contacts.name` on first contact -- without this, every contact created by the real
+   *  inbound pipeline stayed "Unnamed contact" forever, since nothing else ever writes that
+   *  column (found during Launch Acceptance testing, ADR-0020). */
+  displayName: string | null;
 }
 
 export type ProviderMessageId = string;

@@ -42,28 +42,33 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 const BIZ_FASHION = "dead0001-0000-0000-0000-000000000001";
 const BIZ_BAKER = "dead0002-0000-0000-0000-000000000002";
 const BIZ_SERVICE = "dead0003-0000-0000-0000-000000000003";
+const BIZ_TUTOR = "dead0004-0000-0000-0000-000000000004";
+const BIZ_GIFT = "dead0005-0000-0000-0000-000000000005";
+const ALL_BIZ_IDS = [BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE, BIZ_TUTOR, BIZ_GIFT];
 
 async function main() {
   console.log("Removing any previously-seeded dev preview data...");
-  for (const id of [BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE]) {
+  for (const id of ALL_BIZ_IDS) {
     await supabase.from("webhook_events").delete().eq("business_id", id);
     await supabase.from("owner_attention_queue").delete().eq("business_id", id);
     await supabase.from("payments").delete().eq("business_id", id);
     await supabase.from("order_field_values").delete().eq("business_id", id);
     await supabase.from("messages").delete().eq("business_id", id);
     await supabase.from("reminders").delete().eq("business_id", id);
+    await supabase.from("business_channel_connections").delete().eq("business_id", id);
     await supabase.from("contact_channel_identities").delete().eq("business_id", id);
     await supabase.from("contacts").delete().eq("business_id", id);
     await supabase.from("businesses").delete().eq("id", id);
   }
 
   const { data: whatsapp } = await supabase.from("channels").select("id").eq("name", "whatsapp").single();
+  const { data: instagram } = await supabase.from("channels").select("id").eq("name", "instagram").single();
 
   const { data: stages } = await supabase
     .from("pipeline_stages")
     .select("id, vertical, stage_key")
     .is("business_id", null)
-    .in("vertical", ["fashion", "baker", "service"]);
+    .in("vertical", ["fashion", "baker", "service", "tutor", "gift"]);
   const stageId = (vertical, key) => stages.find((s) => s.vertical === vertical && s.stage_key === key).id;
 
   console.log("Creating businesses...");
@@ -71,8 +76,26 @@ async function main() {
     { id: BIZ_FASHION, name: "Meera's Tailoring", vertical: "fashion", subscription_status: "active" },
     { id: BIZ_BAKER, name: "Sweet Crumb Bakes", vertical: "baker", subscription_status: "active" },
     { id: BIZ_SERVICE, name: "Glow Studio Appointments", vertical: "service", subscription_status: "active" },
+    { id: BIZ_TUTOR, name: "Bright Minds Tuitions", vertical: "tutor", subscription_status: "active" },
+    { id: BIZ_GIFT, name: "Wrapped With Love", vertical: "gift", subscription_status: "active" },
   ]);
   if (bizError) throw new Error(`Failed to insert businesses: ${bizError.message}`);
+
+  // Every dev-preview business gets both channels connected -- there is no admin-panel
+  // "connect a channel" UI yet (deliberately deferred to Build Phase 6 / real provider
+  // integration, ADR-0012), so this is the only way to populate
+  // business_channel_connections for Launch Acceptance's webhook-driven testing
+  // (lib/engine/business-resolution.ts's resolveBusinessIdFromProviderAccount depends on
+  // these rows existing -- found completely empty, for every business, while setting up
+  // that pass). provider_account_id values are deterministic per business so a test script
+  // can address a specific business+channel without querying for it first.
+  console.log("Connecting whatsapp + instagram for every dev-preview business...");
+  const connections = ALL_BIZ_IDS.flatMap((businessId) => [
+    { business_id: businessId, channel_id: whatsapp.id, provider_account_id: `dev-wa-${businessId}`, connected: true },
+    { business_id: businessId, channel_id: instagram.id, provider_account_id: `dev-ig-${businessId}`, connected: true },
+  ]);
+  const { error: connectionsError } = await supabase.from("business_channel_connections").insert(connections);
+  if (connectionsError) throw new Error(`Failed to insert channel connections: ${connectionsError.message}`);
 
   async function addContact(businessId, vertical, stageKey, name, phone, messageText, messageAgo, attentionReason) {
     // last_inbound_at is set on both contacts and contact_channel_identities, matching the
@@ -206,6 +229,29 @@ async function main() {
   await addContact(BIZ_SERVICE, "service", "inquiry", "Zoya", "+919993330002", "Do you have any evening slots this week?", hoursAgo(30), null);
   await addPayment(BIZ_SERVICE, fatimaId, "Fatima", { orderReference: "ORD-3001", amountDue: 500, amountPaid: 500, status: "paid", dueDaysFromNow: -5 });
 
+  // Bright Minds Tuitions (tutor) -- tutor has zero vertical_field_definitions, like
+  // fashion/service, so no addFieldValues calls here either.
+  const rohitId = await addContact(BIZ_TUTOR, "tutor", "enrolled", "Rohit's Parent", "+919994440001", "Can we shift Rohit's Tuesday class?", hoursAgo(4), null);
+  await addContact(BIZ_TUTOR, "tutor", "parent_inquiry", "Anjali's Parent", "+919994440002", "What are your fees for class 8 maths?", hoursAgo(15), "unmatched_message");
+  await addPayment(BIZ_TUTOR, rohitId, "Rohit's Parent", { orderReference: "FEE-SEP", amountDue: 2400, amountPaid: 2400, status: "paid", dueDaysFromNow: -2 });
+
+  // Wrapped With Love (gift) -- gift has 17 vertical_field_definitions; Meher gets a fuller
+  // order, Arjun gets just the occasion (early inquiry).
+  const meherId = await addContact(BIZ_GIFT, "gift", "awaiting_advance_payment", "Meher", "+919995550001", "Can you engrave 'A & R, 12.09' on it?", hoursAgo(7), null);
+  const arjunId = await addContact(BIZ_GIFT, "gift", "new_inquiry", "Arjun", "+919995550002", "Need a birthday gift idea for my sister", hoursAgo(1), "unmatched_message");
+  await addFieldValues(BIZ_GIFT, meherId, "Meher", "gift", {
+    recipient_name: "R",
+    occasion: "Anniversary",
+    gift_type: "Engraved photo frame",
+    personalization_required: true,
+    name_to_include: "A & R, 12.09",
+    quantity: 1,
+    surprise_required: true,
+    delivery_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+  });
+  await addFieldValues(BIZ_GIFT, arjunId, "Arjun", "gift", { occasion: "Birthday" });
+  await addPayment(BIZ_GIFT, meherId, "Meher", { orderReference: "ORD-4001", amountDue: 1150, amountPaid: 400, status: "pending", dueDaysFromNow: 5 });
+
   // Auto-restore any owner accounts created against these fixture businesses -- the
   // cascade-delete gotcha documented at the top of this file is real, but re-fixing it by
   // hand every time this script runs is exactly the kind of avoidable friction worth
@@ -227,7 +273,7 @@ async function main() {
   }
 
   console.log("Done. Business ids:");
-  console.log({ BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE });
+  console.log({ BIZ_FASHION, BIZ_BAKER, BIZ_SERVICE, BIZ_TUTOR, BIZ_GIFT });
 }
 
 main().catch((err) => {
