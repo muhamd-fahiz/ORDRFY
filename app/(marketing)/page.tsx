@@ -1,8 +1,26 @@
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
+import { Hero } from "@/components/marketing/Hero";
+import { HowItWorks } from "@/components/marketing/HowItWorks";
+import { VerticalsShowcase } from "@/components/marketing/VerticalsShowcase";
+import { WhatItHandles } from "@/components/marketing/WhatItHandles";
+import { Pricing } from "@/components/marketing/Pricing";
+import { Faq } from "@/components/marketing/Faq";
+import { ClosingCta } from "@/components/marketing/ClosingCta";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { MARKETING_CONFIG } from "@/lib/marketing/content";
+
 export default function MarketingHome() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-2 p-4">
-      <h1 className="text-3xl font-semibold">Ordrfy</h1>
-      <p className="text-neutral-500">Chats in. Orders out.</p>
-    </main>
+    <>
+      <MarketingHeader />
+      <Hero />
+      <HowItWorks />
+      <VerticalsShowcase />
+      <WhatItHandles />
+      <Pricing period={MARKETING_CONFIG.pricingPeriod} />
+      {MARKETING_CONFIG.showFaq && <Faq />}
+      <ClosingCta />
+      <MarketingFooter />
+    </>
   );
 }

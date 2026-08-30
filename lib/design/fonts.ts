@@ -6,7 +6,9 @@ import { Unbounded, Hanken_Grotesk, Space_Mono } from "next/font/google";
 
 export const unbounded = Unbounded({
   subsets: ["latin"],
-  weight: ["400", "700"],
+  // 600/800 added for the marketing site (ADR-0022) -- the owner app/admin panel only ever
+  // used 400/700, the marketing hifi spec calls for all four weights (headlines are 800).
+  weight: ["400", "600", "700", "800"],
   variable: "--font-unbounded",
   display: "swap",
 });

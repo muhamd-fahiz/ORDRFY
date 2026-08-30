@@ -30,6 +30,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0019](0019-today-view-mutation-design.md) | Today-view mutation design — "Review" semantics and send-reminder idempotency | Accepted |
 | [0020](0020-mock-verified-before-real-providers.md) | Full product built and verified against mocks before any real provider integration | Accepted |
 | [0021](0021-carbon-pink-extended-to-admin-panel.md) | Extend Carbon Pink to the admin panel, reversing ADR-0016's "admin stays untouched" call | Accepted |
+| [0022](0022-marketing-site-carbon-pink-extension.md) | Marketing site built on Carbon Pink, with four new tokens (ink.raised, paper.warm, pink.hover, highlight) | Accepted |
 
 ## Migration note
 

@@ -60,7 +60,7 @@ Tagline: "Chats in. Orders out."
    demo data) and safe to re-run — see the script's header comment for one real gotcha
    around owner accounts created against its fixture businesses.
 
-## Current status (2026-08-29)
+## Current status (2026-08-30)
 
 Verified means actually tested against the live local stack — real browser sessions, real
 `psql` checks, real signed-in accounts — not just "the code was written."
@@ -82,6 +82,10 @@ Verified means actually tested against the live local stack — real browser ses
   [ADR-0019](./docs/architecture/decisions/0019-today-view-mutation-design.md))
 - ✅ **CI** — every push runs the full local Supabase stack, RLS/trigger SQL tests, unit
   tests, typecheck, lint, and build (`.github/workflows/ci.yml`)
+- ✅ **Marketing site** — one page, nine sections, built from a Claude Design handoff,
+  Carbon Pink plus four new tokens added for it
+  ([ADR-0022](./docs/architecture/decisions/0022-marketing-site-carbon-pink-extension.md)).
+  Pricing is structural placeholders only, per the handoff's own instruction.
 - ⬜ **Owner app, remaining workflows** — all core screens exist now; Settings is
   deliberately scoped to real `businesses` profile fields only, since the other documented
   `business_settings` keys (reminder timing, instant-ack, digest frequency) have no engine
@@ -97,5 +101,5 @@ Verified means actually tested against the live local stack — real browser ses
   verification is running in parallel now regardless, since its review timeline is external
   and unpredictable.
 
-Two open decisions are tracked in
+Three open decisions are tracked in
 [docs/decisions-register.md](./docs/decisions-register.md), not silently assumed either way.

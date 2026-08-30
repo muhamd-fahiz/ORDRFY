@@ -7,7 +7,12 @@ together, not one folder.
 ## Surfaces
 
 ### `(marketing)/` — public marketing site
-Placeholder only (`page.tsx` is the unmodified scaffold). Not started as real work.
+One page, nine sections (`components/marketing/`), built 2026-08-30 from a Claude Design
+handoff -- see [ADR-0022](../docs/architecture/decisions/0022-marketing-site-carbon-pink-extension.md)
+for the token/logo decisions made integrating it. Content (verticals, FAQ) lives in
+`lib/marketing/content.ts`, kept separate from components so it's a constants-module edit,
+not a component edit, if it ever moves to a CMS. `app/(marketing)/layout.tsx` wires the same
+font variables the other two surfaces use, same pattern as `app/admin/layout.tsx`.
 
 ### `admin/` — internal ops panel
 Gated by `admin_users` membership + mandatory TOTP MFA (`lib/auth/admin-guard.ts`). Uses the
