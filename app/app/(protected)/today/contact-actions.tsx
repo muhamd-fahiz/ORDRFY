@@ -16,6 +16,10 @@ export function ContactActions({
   const router = useRouter();
   const [pending, setPending] = useState<Pending>(null);
   const [message, setMessage] = useState<string | null>(null);
+  // Shown briefly before router.refresh() re-renders this card without the "Mark as
+  // handled" button at all -- same pattern as Payments' "Marked as paid.", so the owner
+  // gets the same immediate confirmation instead of the button just silently vanishing.
+  const [handledConfirmed, setHandledConfirmed] = useState(false);
 
   async function handleReview() {
     setPending("review");
@@ -31,7 +35,8 @@ export function ContactActions({
       setMessage(body.error ?? "Something went wrong.");
       return;
     }
-    router.refresh();
+    setHandledConfirmed(true);
+    setTimeout(() => router.refresh(), 900);
   }
 
   async function handleSendReminder() {
@@ -62,11 +67,14 @@ export function ContactActions({
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex gap-2">
-        {hasUnresolvedAttention && (
-          <Button variant="secondary" size="sm" disabled={pending !== null} onClick={handleReview}>
-            {pending === "review" ? "..." : "Review"}
-          </Button>
-        )}
+        {hasUnresolvedAttention &&
+          (handledConfirmed ? (
+            <span className="font-app text-xs font-semibold text-confirmed">Marked as handled.</span>
+          ) : (
+            <Button variant="secondary" size="sm" disabled={pending !== null} onClick={handleReview}>
+              {pending === "review" ? "..." : "Mark as handled"}
+            </Button>
+          ))}
         <Button variant="primary" size="sm" disabled={pending !== null} onClick={handleSendReminder}>
           {pending === "reminder" ? "..." : "Send Reminder"}
         </Button>

@@ -68,7 +68,7 @@ export function ContactsList({ stages, contacts }: ContactsListProps) {
 
       {visibleContacts.length === 0 ? (
         <p className="font-app text-sm text-ink-70">
-          {normalizedQuery ? "No contacts match that search." : "No contacts in this stage."}
+          {normalizedQuery ? "No customers match that search." : "No customers with this status."}
         </p>
       ) : (
         <div className="flex flex-col gap-2">
@@ -79,7 +79,7 @@ export function ContactsList({ stages, contacts }: ContactsListProps) {
               href={`/app/contacts/${contact.id}`}
               timeLabel={contact.timeLabel}
               message={contact.lastMessage}
-              stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No stage set"}</Chip>}
+              stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No status yet"}</Chip>}
             />
           ))}
         </div>

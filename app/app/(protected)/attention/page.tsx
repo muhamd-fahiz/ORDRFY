@@ -14,7 +14,7 @@ export default async function AttentionPage() {
   return (
     <div className="mx-auto max-w-sm px-4 py-6">
       <h1 className="mb-1 font-display text-xl font-bold text-ink">Needs Attention</h1>
-      <p className="mb-4 font-app text-xs text-ink-40">Oldest waiting first, regardless of who messaged most recently.</p>
+      <p className="mb-4 font-app text-xs text-ink-40">Oldest first — customers who&apos;ve been waiting longest.</p>
 
       {queue.length === 0 ? (
         <p className="font-app text-sm text-ink-70">Nothing needs attention right now.</p>
@@ -27,7 +27,7 @@ export default async function AttentionPage() {
               href={`/app/contacts/${row.contactId}`}
               timeLabel={formatRelativeTime(row.lastMessageAt)}
               message={row.lastMessage}
-              stageChip={<Chip tone="neutral">{row.stageLabel ?? "No stage set"}</Chip>}
+              stageChip={<Chip tone="neutral">{row.stageLabel ?? "No status yet"}</Chip>}
               action={<ContactActions contactId={row.contactId} hasUnresolvedAttention />}
             />
           ))}

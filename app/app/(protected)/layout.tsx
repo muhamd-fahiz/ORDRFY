@@ -19,7 +19,7 @@ export default async function ProtectedOwnerLayout({ children }: { children: Rea
             Today
           </Link>
           <Link href="/app/contacts" className="font-app text-xs text-ink-70 hover:text-ink">
-            Contacts
+            Customers
           </Link>
           <Link href="/app/attention" className="font-app text-xs text-ink-70 hover:text-ink">
             Attention

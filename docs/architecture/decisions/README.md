@@ -35,6 +35,8 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0024](0024-pre-friend-testing-ux-fixes.md) | Pre-friend-testing UX fixes -- marketing login link, dead CTA fix, error/404 pages, clearer empty states | Accepted |
 | [0025](0025-auth-page-fixes-and-approved-ux-items.md) | Auth page layout/logo fixes, password reset built end-to-end, contact search, Mark-as-Paid confirmation | Accepted |
 | [0026](0026-dev-mode-mobile-and-tunnel-hydration-fixes.md) | Dev-mode mobile testing and Cloudflare Tunnel hydration fixes -- allowedDevOrigins wildcard, MailtoButton | Accepted |
+| [0027](0027-simplicity-pass-plain-language-and-safe-dropdowns.md) | Simplicity pass -- plain business language, safe Settings dropdowns, hidden empty states | Accepted |
+| [0028](0028-per-contact-manual-takeover-scope.md) | Per-contact manual takeover -- scoped design, not approved for implementation | Proposed |
 
 ## Migration note
 

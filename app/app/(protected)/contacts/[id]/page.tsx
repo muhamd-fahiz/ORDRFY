@@ -19,22 +19,18 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="mx-auto max-w-sm px-4 py-6">
       <Link href="/app/contacts" className="mb-4 inline-block font-app text-xs text-ink-40 underline">
-        &larr; Contacts
+        &larr; Customers
       </Link>
       <h1 className="mb-6 font-display text-xl font-bold text-ink">{contact.name}</h1>
 
       <section className="mb-6">
-        <h2 className="mb-2 font-app text-xs font-semibold uppercase tracking-wide text-ink-40">Pipeline Stage</h2>
+        <h2 className="mb-2 font-app text-xs font-semibold uppercase tracking-wide text-ink-40">Status</h2>
         <StageChanger contactId={contact.id} stages={contact.availableStages} currentStageId={contact.currentStageId} />
       </section>
 
-      <section className="mb-6">
-        <h2 className="mb-2 font-app text-xs font-semibold uppercase tracking-wide text-ink-40">Order Details</h2>
-        {contact.verticalFields.length === 0 ? (
-          <p className="font-app text-sm text-ink-70">
-            No vertical-specific order fields for this business type.
-          </p>
-        ) : (
+      {contact.verticalFields.length > 0 && (
+        <section className="mb-6">
+          <h2 className="mb-2 font-app text-xs font-semibold uppercase tracking-wide text-ink-40">Order Details</h2>
           <dl className="flex flex-col gap-2 rounded-2xl border border-ink-15 bg-paper-raised p-4">
             {contact.verticalFields.map((field) => (
               <div key={field.fieldKey} className="flex justify-between gap-3">
@@ -43,8 +39,8 @@ export default async function ContactDetailPage({ params }: { params: Promise<{ 
               </div>
             ))}
           </dl>
-        )}
-      </section>
+        </section>
+      )}
 
       <section>
         <h2 className="mb-2 font-app text-xs font-semibold uppercase tracking-wide text-ink-40">Payments</h2>

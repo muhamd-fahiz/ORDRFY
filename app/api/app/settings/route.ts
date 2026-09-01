@@ -10,6 +10,12 @@ interface SettingsBody {
   preferredLanguage?: string;
 }
 
+// Matches the owner-app Settings screen's own dropdown options (see
+// app/app/(protected)/settings/settings-form.tsx) -- every business created so far is
+// India-based. A business's own already-stored value is always allowed too (checked below
+// against `before.timezone`), so this never rejects a value nothing here put there.
+const KNOWN_TIMEZONES = new Set(["Asia/Kolkata"]);
+
 /**
  * Owner self-service edit of their own business profile -- name/phone/email/timezone/
  * preferred_language only (see lib/data/business-profile.ts for why `vertical` and
@@ -49,6 +55,10 @@ export async function POST(request: NextRequest) {
     .single();
   if (beforeError) {
     return NextResponse.json({ error: beforeError.message }, { status: 500 });
+  }
+
+  if (!KNOWN_TIMEZONES.has(timezone) && timezone !== before.timezone) {
+    return NextResponse.json({ error: "That timezone isn't recognized." }, { status: 400 });
   }
 
   const { error: updateError } = await supabase

@@ -29,7 +29,7 @@ export default async function TodayPage() {
 
       {today.contacts.length === 0 ? (
         <p className="font-app text-sm text-ink-70">
-          No customer messages yet. Once WhatsApp or Instagram is connected, new chats will show up here automatically.
+          No customer messages yet. New chats from WhatsApp or Instagram will appear here automatically.
         </p>
       ) : (
         <div className="flex flex-col gap-2">
@@ -40,7 +40,7 @@ export default async function TodayPage() {
               href={`/app/contacts/${contact.id}`}
               timeLabel={formatRelativeTime(contact.lastMessageAt)}
               message={contact.lastMessage}
-              stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No stage set"}</Chip>}
+              stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No status yet"}</Chip>}
               action={
                 <ContactActions contactId={contact.id} hasUnresolvedAttention={contact.hasUnresolvedAttention} />
               }
