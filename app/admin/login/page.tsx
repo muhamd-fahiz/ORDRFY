@@ -19,7 +19,7 @@ export default async function AdminLoginPage({
     case "needs_mfa_challenge":
       redirect("/admin/mfa/challenge");
     case "ready":
-      redirect("/admin/businesses");
+      redirect("/admin/dashboard");
     case "signed_out":
     case "not_admin":
       break;

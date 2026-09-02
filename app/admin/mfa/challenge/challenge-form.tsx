@@ -62,7 +62,7 @@ export function ChallengeForm() {
       return;
     }
 
-    router.replace("/admin/businesses");
+    router.replace("/admin/dashboard");
     router.refresh();
   }
 

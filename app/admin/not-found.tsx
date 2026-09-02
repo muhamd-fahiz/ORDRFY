@@ -8,8 +8,8 @@ export default function AdminNotFound() {
       title="Page not found."
       message="That page doesn't exist, or the link may be out of date."
       action={
-        <Link href="/admin/businesses" className="rounded-md bg-pink px-4 py-2 font-display text-sm font-bold text-white transition-colors hover:bg-pink-hover">
-          Back to Businesses
+        <Link href="/admin/dashboard" className="rounded-md bg-pink px-4 py-2 font-display text-sm font-bold text-white transition-colors hover:bg-pink-hover">
+          Back to Dashboard
         </Link>
       }
     />

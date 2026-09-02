@@ -13,7 +13,7 @@ export default async function MfaEnrollPage() {
     case "needs_mfa_challenge":
       redirect("/admin/mfa/challenge");
     case "ready":
-      redirect("/admin/businesses");
+      redirect("/admin/dashboard");
     case "needs_mfa_enrollment":
       break;
   }

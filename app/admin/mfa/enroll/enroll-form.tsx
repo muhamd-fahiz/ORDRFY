@@ -77,7 +77,7 @@ export function EnrollForm() {
       return;
     }
 
-    router.replace("/admin/businesses");
+    router.replace("/admin/dashboard");
     router.refresh();
   }
 
