@@ -1,4 +1,4 @@
-# ADR-0033: Admin Subscriptions Tab — Status Only, No Fabricated Amounts
+# ADR-0033: Admin Subscriptions Tab — Status Plus a Manually-Set Amount
 
 **Status:** Accepted (2026-09-02)
 
@@ -22,18 +22,26 @@ vertical-filter chip row (both showing live counts, mirroring the Contacts List'
 filter-chip pattern) plus a name search sit above the table, added once it was pointed out
 this needs to stay usable as the business count grows.
 
-**Deliberately shows no ₹ amount.** Fabricating a number here would be actively worse than
-omitting it — an admin glancing at a real-looking rupee figure would reasonably assume it's
-real. A one-line note under the page heading says plainly that pricing isn't finalized yet,
-matching the marketing site's own "₹—" framing instead of contradicting it.
-
-**Recommendation given, not yet built:** when asked how "amount" should work, proposed the
-smallest real option — a manually-editable per-business monthly amount stored as a
+**Amount is manually-set, not fabricated or automated.** When asked how "amount" should
+work, proposed the smallest real option — a per-business monthly amount stored as a
 `business_settings` row (that table already exists for exactly this kind of per-business
-override; no new schema), letting the project owner track whatever's actually been agreed
-per business today without waiting for a finalized company-wide price or a real Razorpay
-integration. Not implemented pending the project owner's choice between that and a fuller
-invoice-history table (see `docs/decisions-register.md`).
+override; no new schema) — and the project owner confirmed: build this now, build the fuller
+real thing later. `AmountCell` (a small click-to-edit component, same single-row-action shape
+as `PaymentActions`/`StageChanger` elsewhere in this codebase) shows `formatRupees(amount)`
+or "Not set", and edits go through a new `POST /api/admin/businesses/[id]/subscription-
+amount` route (admin-session-gated, writes via service-role, logs to `activity_log`). This is
+explicitly what the project owner is manually agreeing per business today — not a real
+invoice, not anything that charges anyone, and not tied to `pricing_plans` (which stays
+empty). A one-line note under the page heading says plainly that this isn't a real invoice
+history, so a future reader doesn't mistake a manually-typed number for billing data.
+
+**Deferred, not built:** a real invoice-history table (`subscription_invoices`: one row per
+billing period, `amount`/`status`/`due_date`/`paid_at`), which would give a real timeline and
+accurate totals instead of one static number. Discussed directly with the project owner —
+explicitly deferred until real pricing and real billing collection exist (around Phase 6's
+Razorpay integration), since building it now would mean rows with no real amounts behind
+them, the same underlying gap just spread across more schema. Tracked in
+`docs/decisions-register.md`.
 
 **Incidental fix while verifying live:** found a leftover test business
 ("Webhook Recovery Test ...") polluting the real business list — traced to
@@ -45,8 +53,14 @@ business delete still fails. The stray row itself was removed from the database 
 
 ## Consequences
 
-- No schema change in this ADR — the page reads only existing, real columns.
-- The "what each business is paying" question remains genuinely open; tracked in
-  `docs/decisions-register.md` pending the project owner's choice of approach.
+- No schema change — `business_settings` already existed for exactly this shape of
+  per-business override.
+- The manually-set amount can drift from reality (nobody's forced to keep it updated, and
+  nothing reconciles it against an actual payment) — an accepted tradeoff of the "simple now,
+  real later" sequencing, not an oversight.
+- The real invoice-history version remains a deliberately open, later decision; tracked in
+  `docs/decisions-register.md`.
 - `scripts/verify-webhook-recovery.mjs` now cleans up completely on every run; re-ran it and
   `launch-acceptance-check.mjs` after the fix to confirm no stray data and no regression.
+- Verified: typecheck, lint, production build all clean; the upsert-on-conflict pattern the
+  new route relies on was directly exercised against the real schema before shipping.

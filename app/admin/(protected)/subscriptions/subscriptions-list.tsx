@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Chip } from "@/components/ui/Chip";
+import { AmountCell } from "./amount-cell";
 
 export interface SubscriptionRow {
   id: string;
@@ -10,6 +11,7 @@ export interface SubscriptionRow {
   vertical: string;
   subscriptionStatus: string;
   trialEndsAt: string | null;
+  monthlyAmount: number | null;
 }
 
 const STATUS_TONE: Record<string, "confirmed" | "attention" | "neutral"> = {
@@ -25,11 +27,11 @@ const STATUS_ORDER = ["active", "trial", "inactive"];
  * (unlike /admin/businesses), since "who's paying, who's on trial, who's inactive" is a
  * billing-status question that cuts across verticals, not a per-vertical one.
  *
- * Deliberately shows no ₹ amount anywhere: business_entitlements and pricing_plans are both
- * empty in this database (checked directly, not assumed), and real subscription prices are
- * still "₹--" placeholders on the marketing site itself (Pricing.tsx). Showing a fabricated
- * number here would be worse than showing none -- see docs/decisions-register.md's open item
- * on what a real subscription-billing schema should look like.
+ * The Amount column (AmountCell) is a manually-set number, not a real invoice or payment
+ * history -- business_entitlements and pricing_plans are both still empty in this database,
+ * and real subscription prices are still "₹--" placeholders on the marketing site itself
+ * (Pricing.tsx). This is the deliberately small first step (ADR-0033); a real invoice-history
+ * table is a separate, later decision once actual billing exists.
  */
 export function SubscriptionsList({ subscriptions }: { subscriptions: SubscriptionRow[] }) {
   const [query, setQuery] = useState("");
@@ -127,6 +129,7 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
                 <th className="py-4 pr-8">Vertical</th>
                 <th className="py-4 pr-8">Status</th>
                 <th className="py-4 pr-8">Trial ends</th>
+                <th className="py-4 pr-8">Amount (₹/mo)</th>
               </tr>
             </thead>
             <tbody>
@@ -142,6 +145,9 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
                     <Chip tone={STATUS_TONE[s.subscriptionStatus] ?? "neutral"}>{s.subscriptionStatus}</Chip>
                   </td>
                   <td className="py-4 pr-8 text-ink-40">{s.trialEndsAt ?? "—"}</td>
+                  <td className="py-4 pr-8">
+                    <AmountCell businessId={s.id} amount={s.monthlyAmount} />
+                  </td>
                 </tr>
               ))}
             </tbody>
