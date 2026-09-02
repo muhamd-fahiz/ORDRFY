@@ -53,24 +53,24 @@ export function MfaSection() {
   }
 
   return (
-    <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-      <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Two-factor authentication</h2>
+    <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Two-factor authentication</h2>
       {loading ? (
-        <p className="text-lg text-ink-70">Loading...</p>
+        <p className="text-sm text-ink-70">Loading...</p>
       ) : factor ? (
-        <div className="flex flex-col gap-3">
-          <p className="text-lg text-ink-70">Authenticator app enrolled since {new Date(factor.createdAt).toLocaleDateString()}.</p>
-          <p className="text-base text-ink-40">
+        <div className="flex flex-col gap-2.5">
+          <p className="text-sm text-ink-70">Authenticator app enrolled since {new Date(factor.createdAt).toLocaleDateString()}.</p>
+          <p className="text-xs text-ink-40">
             Lost your device or switched phones? Reset it here, then set up a new authenticator right away --
             two-factor authentication is required for every admin account and can&apos;t be turned off.
           </p>
-          {error && <p className="text-lg text-attention">{error}</p>}
-          <Button type="button" variant="secondary" onClick={handleReset} disabled={resetting} className="w-fit px-6 py-3.5 text-lg">
+          {error && <p className="text-sm text-attention">{error}</p>}
+          <Button type="button" variant="secondary" size="sm" onClick={handleReset} disabled={resetting} className="w-fit">
             {resetting ? "Resetting..." : "Reset authenticator app"}
           </Button>
         </div>
       ) : (
-        <p className="text-lg text-attention">
+        <p className="text-sm text-attention">
           No authenticator app enrolled -- this shouldn&apos;t be possible while signed in. Sign out and back in to
           re-enroll.
         </p>

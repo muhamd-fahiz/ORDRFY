@@ -6,10 +6,10 @@ const SUBSCRIPTION_AMOUNT_SETTING_KEY = "subscription_amount_inr";
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-xl border border-ink-15 p-5 lg:p-6">
-      <div className="font-app text-sm font-semibold uppercase tracking-wide text-ink-40">{label}</div>
-      <div className="mt-2 font-data text-3xl font-bold text-ink lg:text-4xl">{value}</div>
-      {hint && <div className="mt-1 font-app text-sm text-ink-40">{hint}</div>}
+    <div className="rounded-lg border border-ink-15 p-4">
+      <div className="font-app text-xs font-semibold uppercase tracking-wide text-ink-40">{label}</div>
+      <div className="mt-1.5 font-data text-2xl font-bold text-ink">{value}</div>
+      {hint && <div className="mt-1 font-app text-xs text-ink-40">{hint}</div>}
     </div>
   );
 }
@@ -64,10 +64,10 @@ export default async function AdminDashboardPage() {
     .sort((a, b) => b.value - a.value);
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
-      <h1 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">Dashboard</h1>
+    <div className="flex flex-col gap-5">
+      <h1 className="font-display text-2xl font-bold sm:text-3xl">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Businesses" value={String(totalBusinesses)} />
         <StatCard label="Active" value={String(activeCount)} />
         <StatCard label="Trial" value={String(trialCount)} />
@@ -75,12 +75,12 @@ export default async function AdminDashboardPage() {
       </div>
 
       {businessesWithoutAmount > 0 && (
-        <p className="font-app text-base text-ink-40 lg:text-lg">
+        <p className="font-app text-sm text-ink-40">
           {businessesWithoutAmount} of {totalBusinesses} business(es) have no subscription amount set yet (Subscriptions tab).
         </p>
       )}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <BarList
           title="Businesses by vertical"
           items={businessesByVerticalChart}

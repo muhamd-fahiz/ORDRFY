@@ -51,18 +51,18 @@ export default async function BusinessDetailPage({
   );
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-8 font-app lg:gap-10">
+    <div className="mx-auto flex max-w-5xl flex-col gap-6 font-app">
       <div>
-        <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl lg:text-5xl">{business.name}</h1>
+        <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">{business.name}</h1>
         {business.deleted_at && (
           <Chip tone="attention">deleted at {new Date(business.deleted_at).toLocaleString()}</Chip>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-        <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-          <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Business Info</h2>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-lg text-ink">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Business Info</h2>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm text-ink">
             <dt className="text-ink-40">Vertical</dt>
             <dd className="capitalize">{business.vertical}</dd>
             <dt className="text-ink-40">Subscription status</dt>
@@ -88,28 +88,28 @@ export default async function BusinessDetailPage({
           </dl>
         </section>
 
-        <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-          <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Channel Connections</h2>
+        <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Channel Connections</h2>
           {!connections || connections.length === 0 ? (
-            <p className="text-lg text-ink-70">No channels connected yet.</p>
+            <p className="text-sm text-ink-70">No channels connected yet.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[420px] border-collapse text-lg text-ink">
+              <table className="w-full min-w-[420px] border-collapse text-sm text-ink">
                 <thead>
                   <tr className="border-b border-ink-15 text-left text-ink-40">
-                    <th className="py-3 pr-6">Channel</th>
-                    <th className="py-3 pr-6">Connected</th>
-                    <th className="py-3 pr-6">Provider account</th>
-                    <th className="py-3 pr-6">Tier</th>
+                    <th className="py-2 pr-4">Channel</th>
+                    <th className="py-2 pr-4">Connected</th>
+                    <th className="py-2 pr-4">Provider account</th>
+                    <th className="py-2 pr-4">Tier</th>
                   </tr>
                 </thead>
                 <tbody>
                   {connections.map((c) => (
                     <tr key={c.channel_id} className="border-b border-ink-15">
-                      <td className="py-3 pr-6 capitalize">{c.channels?.name}</td>
-                      <td className="py-3 pr-6">{c.connected ? "yes" : "no"}</td>
-                      <td className="py-3 pr-6">{c.provider_account_id ?? "—"}</td>
-                      <td className="py-3 pr-6">{c.current_tier ?? "—"}</td>
+                      <td className="py-2 pr-4 capitalize">{c.channels?.name}</td>
+                      <td className="py-2 pr-4">{c.connected ? "yes" : "no"}</td>
+                      <td className="py-2 pr-4">{c.provider_account_id ?? "—"}</td>
+                      <td className="py-2 pr-4">{c.current_tier ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -118,12 +118,12 @@ export default async function BusinessDetailPage({
           )}
         </section>
 
-        <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-          <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Entitlements</h2>
+        <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Entitlements</h2>
           {!entitlements || entitlements.length === 0 ? (
-            <p className="text-lg text-ink-70">No entitlements assigned yet.</p>
+            <p className="text-sm text-ink-70">No entitlements assigned yet.</p>
           ) : (
-            <ul className="text-lg text-ink">
+            <ul className="text-sm text-ink">
               {entitlements.map((e) => (
                 <li key={e.entitlement_key}>
                   {e.entitlement_key} — {e.active ? "active" : "inactive"}
@@ -133,15 +133,15 @@ export default async function BusinessDetailPage({
           )}
         </section>
 
-        <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-          <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Owner Members</h2>
+        <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Owner Members</h2>
           {membershipsWithEmail.length === 0 ? (
             <div className="flex flex-col gap-3">
-              <p className="text-lg text-ink-70">No owner account created yet.</p>
+              <p className="text-sm text-ink-70">No owner account created yet.</p>
               <CreateOwnerForm businessId={id} defaultEmail={business.email ?? ""} />
             </div>
           ) : (
-            <ul className="text-lg text-ink">
+            <ul className="text-sm text-ink">
               {membershipsWithEmail.map((m) => (
                 <li key={m.user_id}>
                   {m.email} — {m.role}

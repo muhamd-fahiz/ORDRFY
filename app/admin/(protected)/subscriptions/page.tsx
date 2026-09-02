@@ -34,9 +34,9 @@ export default async function SubscriptionsPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
-      <h1 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">Subscriptions</h1>
-      <p className="font-app text-base text-ink-40 lg:text-lg">
+    <div className="flex flex-col gap-5">
+      <h1 className="font-display text-2xl font-bold sm:text-3xl">Subscriptions</h1>
+      <p className="font-app text-sm text-ink-40">
         There&apos;s no finalized company-wide pricing yet, so amounts here are whatever you&apos;ve manually set per
         business — not a real invoice or payment history. Click an amount to set or change it.
       </p>

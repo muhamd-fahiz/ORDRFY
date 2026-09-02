@@ -15,17 +15,17 @@ export default async function NewBusinessPage() {
   }
 
   return (
-    <div className="flex max-w-2xl flex-col gap-8">
-      <h1 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">New Business</h1>
-      <form action={createBusiness} className="flex flex-col gap-5 rounded-xl border border-ink-15 p-6 lg:p-9">
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+    <div className="flex max-w-xl flex-col gap-6">
+      <h1 className="font-display text-2xl font-bold sm:text-3xl">New Business</h1>
+      <form action={createBusiness} className="flex flex-col gap-4 rounded-lg border border-ink-15 p-4 sm:p-5">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Business name
-          <input name="name" required className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink" />
+          <input name="name" required className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink" />
         </label>
 
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Vertical
-          <select name="vertical" required className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink">
+          <select name="vertical" required className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink">
             <option value="">Select a vertical...</option>
             {verticals.map((v) => (
               <option key={v.key} value={v.key}>
@@ -35,40 +35,40 @@ export default async function NewBusinessPage() {
           </select>
         </label>
 
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Phone
-          <input name="phone" className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink" />
+          <input name="phone" className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink" />
         </label>
 
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Email
-          <input name="email" type="email" className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink" />
+          <input name="email" type="email" className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink" />
         </label>
 
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Timezone
           <input
             name="timezone"
             defaultValue="Asia/Kolkata"
-            className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink"
           />
         </label>
 
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Preferred language
           <input
             name="preferred_language"
             defaultValue="en"
-            className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink"
           />
         </label>
 
-        <label className="flex flex-col gap-1.5 font-app text-lg text-ink-70">
+        <label className="flex flex-col gap-1 font-app text-sm text-ink-70">
           Subscription status
           <select
             name="subscription_status"
             defaultValue="trial"
-            className="rounded-lg border border-ink-15 px-4 py-3 font-app text-lg text-ink"
+            className="rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink"
           >
             <option value="trial">Trial</option>
             <option value="active">Active</option>
@@ -76,7 +76,7 @@ export default async function NewBusinessPage() {
           </select>
         </label>
 
-        <Button type="submit" className="mt-2 w-fit px-6 py-3.5 text-lg">
+        <Button type="submit" className="mt-2 w-fit">
           Create Business
         </Button>
       </form>

@@ -53,16 +53,16 @@ export default async function VerticalBusinessesPage({
   }));
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
-      <Link href="/admin/businesses" className="inline-block font-app text-base text-ink-40 underline">
+    <div className="flex flex-col gap-5">
+      <Link href="/admin/businesses" className="inline-block font-app text-sm text-ink-40 underline">
         &larr; All verticals
       </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">{verticalRow.label}</h1>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">{verticalRow.label}</h1>
         <Link
           href="/admin/businesses/new"
-          className="inline-flex items-center justify-center rounded-lg bg-pink-strong px-6 py-3.5 font-app text-base font-semibold text-paper-raised transition-colors hover:bg-pink lg:px-7 lg:py-4 lg:text-lg"
+          className="inline-flex items-center justify-center rounded-lg bg-pink-strong px-4 py-2.5 font-app text-sm font-semibold text-paper-raised transition-colors hover:bg-pink"
         >
           New Business
         </Link>

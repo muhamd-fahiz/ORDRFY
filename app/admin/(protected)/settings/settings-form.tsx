@@ -66,41 +66,41 @@ export function SettingsForm({ name: initialName, email }: { name: string; email
   }
 
   return (
-    <div className="flex flex-col gap-8 lg:gap-10">
-      <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-        <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Admin profile</h2>
-        <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5 text-lg text-ink-70">
+    <div className="flex flex-col gap-6">
+      <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Admin profile</h2>
+        <form onSubmit={handleProfileSubmit} className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1 text-sm text-ink-70">
             Name
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="rounded-lg border border-ink-15 px-4 py-3 text-lg text-ink"
+              className="rounded-lg border border-ink-15 px-3 py-2 text-sm text-ink"
             />
           </label>
-          <label className="flex flex-col gap-1.5 text-lg text-ink-70">
+          <label className="flex flex-col gap-1 text-sm text-ink-70">
             Email
             <input
               value={email}
               disabled
-              className="rounded-lg border border-ink-15 bg-ink-15/30 px-4 py-3 text-lg text-ink-40"
+              className="rounded-lg border border-ink-15 bg-ink-15/30 px-3 py-2 text-sm text-ink-40"
             />
-            <span className="text-base text-ink-40">Contact another admin to change your sign-in email.</span>
+            <span className="text-xs text-ink-40">Contact another admin to change your sign-in email.</span>
           </label>
           {profileMessage && (
-            <p className={`text-lg ${profileMessage.isError ? "text-attention" : "text-confirmed"}`}>{profileMessage.text}</p>
+            <p className={`text-sm ${profileMessage.isError ? "text-attention" : "text-confirmed"}`}>{profileMessage.text}</p>
           )}
-          <Button type="submit" disabled={savingProfile} size="md" className="mt-1 w-fit px-6 py-3.5 text-lg">
+          <Button type="submit" disabled={savingProfile} size="md" className="mt-1 w-fit">
             {savingProfile ? "Saving..." : "Save changes"}
           </Button>
         </form>
       </section>
 
-      <section className="rounded-xl border border-ink-15 p-6 lg:p-9">
-        <h2 className="mb-4 text-base font-semibold uppercase tracking-wide text-ink-40">Change password</h2>
-        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5 text-lg text-ink-70">
+      <section className="rounded-lg border border-ink-15 p-4 sm:p-5">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-40">Change password</h2>
+        <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1 text-sm text-ink-70">
             Current password
             <input
               type="password"
@@ -108,10 +108,10 @@ export function SettingsForm({ name: initialName, email }: { name: string; email
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="rounded-lg border border-ink-15 px-4 py-3 text-lg text-ink"
+              className="rounded-lg border border-ink-15 px-3 py-2 text-sm text-ink"
             />
           </label>
-          <label className="flex flex-col gap-1.5 text-lg text-ink-70">
+          <label className="flex flex-col gap-1 text-sm text-ink-70">
             New password
             <input
               type="password"
@@ -119,10 +119,10 @@ export function SettingsForm({ name: initialName, email }: { name: string; email
               onChange={(e) => setNewPassword(e.target.value)}
               required
               autoComplete="new-password"
-              className="rounded-lg border border-ink-15 px-4 py-3 text-lg text-ink"
+              className="rounded-lg border border-ink-15 px-3 py-2 text-sm text-ink"
             />
           </label>
-          <label className="flex flex-col gap-1.5 text-lg text-ink-70">
+          <label className="flex flex-col gap-1 text-sm text-ink-70">
             Confirm new password
             <input
               type="password"
@@ -130,13 +130,13 @@ export function SettingsForm({ name: initialName, email }: { name: string; email
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               autoComplete="new-password"
-              className="rounded-lg border border-ink-15 px-4 py-3 text-lg text-ink"
+              className="rounded-lg border border-ink-15 px-3 py-2 text-sm text-ink"
             />
           </label>
           {passwordMessage && (
-            <p className={`text-lg ${passwordMessage.isError ? "text-attention" : "text-confirmed"}`}>{passwordMessage.text}</p>
+            <p className={`text-sm ${passwordMessage.isError ? "text-attention" : "text-confirmed"}`}>{passwordMessage.text}</p>
           )}
-          <Button type="submit" disabled={savingPassword} size="md" className="mt-1 w-fit px-6 py-3.5 text-lg">
+          <Button type="submit" disabled={savingPassword} size="md" className="mt-1 w-fit">
             {savingPassword ? "Saving..." : "Change password"}
           </Button>
         </form>

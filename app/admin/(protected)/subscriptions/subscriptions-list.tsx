@@ -59,12 +59,12 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
   const verticals = [...new Set(subscriptions.map((s) => s.vertical))].sort();
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap gap-3">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => setStatusFilter(null)}
-          className={`rounded-full px-4 py-2 font-app text-base font-bold transition-colors ${
+          className={`rounded-full px-3.5 py-1.5 font-app text-sm font-bold transition-colors ${
             statusFilter === null ? "bg-pink-strong text-paper-raised" : "bg-ink-15 text-ink-70 hover:bg-ink-15/70"
           }`}
         >
@@ -75,7 +75,7 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
             key={status}
             type="button"
             onClick={() => setStatusFilter(status)}
-            className={`rounded-full px-4 py-2 font-app text-base font-bold capitalize transition-colors ${
+            className={`rounded-full px-3.5 py-1.5 font-app text-sm font-bold capitalize transition-colors ${
               statusFilter === status ? "bg-pink-strong text-paper-raised" : "bg-ink-15 text-ink-70 hover:bg-ink-15/70"
             }`}
           >
@@ -88,7 +88,7 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
         <button
           type="button"
           onClick={() => setVerticalFilter(null)}
-          className={`rounded-full px-3.5 py-1.5 font-app text-sm font-semibold capitalize transition-colors ${
+          className={`rounded-full px-3 py-1 font-app text-xs font-semibold capitalize transition-colors ${
             verticalFilter === null ? "bg-ink text-paper" : "bg-ink-15/60 text-ink-70 hover:bg-ink-15"
           }`}
         >
@@ -101,7 +101,7 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
               key={v}
               type="button"
               onClick={() => setVerticalFilter(v)}
-              className={`rounded-full px-3.5 py-1.5 font-app text-sm font-semibold capitalize transition-colors ${
+              className={`rounded-full px-3 py-1 font-app text-xs font-semibold capitalize transition-colors ${
                 verticalFilter === v ? "bg-ink text-paper" : "bg-ink-15/60 text-ink-70 hover:bg-ink-15"
               }`}
             >
@@ -115,37 +115,37 @@ export function SubscriptionsList({ subscriptions }: { subscriptions: Subscripti
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by business name"
-        className="w-full max-w-sm rounded-lg border border-ink-15 px-4 py-3 font-app text-base text-ink placeholder:text-ink-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-strong lg:text-lg"
+        className="w-full max-w-sm rounded-lg border border-ink-15 px-3 py-2 font-app text-sm text-ink placeholder:text-ink-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-strong"
       />
 
       {visible.length === 0 ? (
-        <p className="font-app text-lg text-ink-70">{normalizedQuery ? "No businesses match that search." : "No businesses yet."}</p>
+        <p className="font-app text-sm text-ink-70">{normalizedQuery ? "No businesses match that search." : "No businesses yet."}</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse font-app text-base lg:text-lg">
+          <table className="w-full min-w-[560px] border-collapse font-app text-sm">
             <thead>
               <tr className="border-b border-ink-15 text-left text-ink-40">
-                <th className="py-4 pr-8">Business</th>
-                <th className="py-4 pr-8">Vertical</th>
-                <th className="py-4 pr-8">Status</th>
-                <th className="py-4 pr-8">Trial ends</th>
-                <th className="py-4 pr-8">Amount (₹/mo)</th>
+                <th className="py-2.5 pr-6">Business</th>
+                <th className="py-2.5 pr-6">Vertical</th>
+                <th className="py-2.5 pr-6">Status</th>
+                <th className="py-2.5 pr-6">Trial ends</th>
+                <th className="py-2.5 pr-6">Amount (₹/mo)</th>
               </tr>
             </thead>
             <tbody>
               {visible.map((s) => (
                 <tr key={s.id} className="border-b border-ink-15">
-                  <td className="py-4 pr-8">
+                  <td className="py-2.5 pr-6">
                     <Link href={`/admin/businesses/${s.id}`} className="font-semibold text-pink-strong hover:underline">
                       {s.name}
                     </Link>
                   </td>
-                  <td className="py-4 pr-8 capitalize">{s.vertical}</td>
-                  <td className="py-4 pr-8">
+                  <td className="py-2.5 pr-6 capitalize">{s.vertical}</td>
+                  <td className="py-2.5 pr-6">
                     <Chip tone={STATUS_TONE[s.subscriptionStatus] ?? "neutral"}>{s.subscriptionStatus}</Chip>
                   </td>
-                  <td className="py-4 pr-8 text-ink-40">{s.trialEndsAt ?? "—"}</td>
-                  <td className="py-4 pr-8">
+                  <td className="py-2.5 pr-6 text-ink-40">{s.trialEndsAt ?? "—"}</td>
+                  <td className="py-2.5 pr-6">
                     <AmountCell businessId={s.id} amount={s.monthlyAmount} />
                   </td>
                 </tr>

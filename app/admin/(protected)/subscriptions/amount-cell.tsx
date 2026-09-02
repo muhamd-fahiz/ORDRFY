@@ -59,7 +59,7 @@ export function AmountCell({ businessId, amount }: { businessId: string; amount:
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder="e.g. 500"
-          className="w-24 rounded-md border border-ink-15 px-2 py-1 font-app text-base text-ink"
+          className="w-24 rounded-md border border-ink-15 px-2 py-1 font-app text-sm text-ink"
         />
         <button type="button" onClick={handleSave} disabled={saving} className="font-app text-sm font-semibold text-pink-strong hover:underline">
           {saving ? "Saving..." : "Save"}

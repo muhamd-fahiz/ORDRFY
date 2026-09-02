@@ -33,26 +33,26 @@ export default async function BusinessesLandingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:gap-8">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">Businesses</h1>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">Businesses</h1>
         <Link
           href="/admin/businesses/new"
-          className="inline-flex items-center justify-center rounded-lg bg-pink-strong px-6 py-3.5 font-app text-base font-semibold text-paper-raised transition-colors hover:bg-pink lg:px-7 lg:py-4 lg:text-lg"
+          className="inline-flex items-center justify-center rounded-lg bg-pink-strong px-4 py-2.5 font-app text-sm font-semibold text-paper-raised transition-colors hover:bg-pink"
         >
           New Business
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(verticals ?? []).map((v) => (
           <Link
             key={v.key}
             href={`/admin/businesses/vertical/${v.key}`}
-            className="flex flex-col gap-2 rounded-xl border border-ink-15 p-6 transition-colors hover:border-pink-strong lg:p-9"
+            className="flex flex-col gap-1.5 rounded-lg border border-ink-15 p-4 transition-colors hover:border-pink-strong"
           >
-            <span className="font-app text-xl font-semibold text-ink lg:text-2xl">{v.label}</span>
-            <span className="font-app text-base text-ink-40 lg:text-lg">
+            <span className="font-app text-base font-semibold text-ink">{v.label}</span>
+            <span className="font-app text-sm text-ink-40">
               {countByVertical.get(v.key) ?? 0} {countByVertical.get(v.key) === 1 ? "business" : "businesses"}
             </span>
           </Link>
