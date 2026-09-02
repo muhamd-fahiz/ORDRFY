@@ -34,8 +34,19 @@ export interface ReminderEngineRunResult {
  * process due reminders one at a time via FOR UPDATE SKIP LOCKED until none remain (capped
  * at MAX_REMINDERS_PER_RUN so one invocation can't run forever), then record the heartbeat.
  * Called by app/api/cron/reminders/route.ts, which pg_cron/pg_net invoke on a schedule.
+ *
+ * `onlyReminderId` (confirmed cross-tenant fix): app/api/app/reminders/send-now/route.ts
+ * calls this synchronously so an owner's manual "Send Reminder" tap gets a real outcome, but
+ * without it this function would drain the *global* due-reminder queue -- claiming and
+ * sending any other business's already-due reminder too, up to MAX_REMINDERS_PER_RUN of
+ * them, as an incidental side effect of one tenant's own action. Passing the specific
+ * reminder id that route just inserted scopes a manual trigger to exactly that one row;
+ * the cron path (called with no argument) is completely unaffected and still drains the
+ * full global queue exactly as before.
  */
-export async function runReminderEngineOnce(): Promise<ReminderEngineRunResult> {
+export async function runReminderEngineOnce(
+  options: { onlyReminderId?: string } = {},
+): Promise<ReminderEngineRunResult> {
   const supabase = createServiceRoleClient();
   const result: ReminderEngineRunResult = {
     claimed: 0,
@@ -48,6 +59,28 @@ export async function runReminderEngineOnce(): Promise<ReminderEngineRunResult> 
 
   const { data: recoveredCount } = await supabase.rpc("recover_stuck_reminders", { p_timeout_minutes: 10 });
   result.recoveredStuck = recoveredCount ?? 0;
+
+  if (options.onlyReminderId) {
+    // Plain conditional UPDATE...WHERE status='pending'...RETURNING is already atomic (the
+    // UPDATE takes the row lock itself) -- FOR UPDATE SKIP LOCKED's extra behavior only
+    // matters when choosing among *many* candidate rows, which claim_next_reminder() needs
+    // and this single-target claim does not.
+    const { data: reminder, error } = await supabase
+      .from("reminders")
+      .update({ status: "processing", locked_at: new Date().toISOString() })
+      .eq("id", options.onlyReminderId)
+      .eq("status", "pending")
+      .select()
+      .maybeSingle();
+    if (error) throw new Error(`Failed to claim reminder ${options.onlyReminderId}: ${error.message}`);
+    if (reminder) {
+      result.claimed++;
+      const outcome = await processReminder(supabase, reminder);
+      result[outcome]++;
+    }
+    await supabase.rpc("record_reminder_engine_heartbeat");
+    return result;
+  }
 
   for (let i = 0; i < MAX_REMINDERS_PER_RUN; i++) {
     // No `.single()` here: claim_next_reminder() already returns one composite row (or a
@@ -124,17 +157,24 @@ async function processReminder(
     supabase.from("channels").select("id").eq("name", "instagram").single(),
   ]);
 
+  // business_id is included on both lookups as defense-in-depth, not just contact_id: the
+  // service-role client bypasses RLS, and contact_id alone doesn't guarantee the identity
+  // belongs to *this* reminder's business (see the guard_contact_business_match trigger,
+  // 20260902000001, which is the primary defense against a mismatched row ever existing --
+  // this is the second, independent layer in case any future write path bypasses it).
   const [{ data: whatsappIdentity }, { data: instagramIdentity }] = await Promise.all([
     supabase
       .from("contact_channel_identities")
       .select("id, opted_out_at")
       .eq("contact_id", reminder.contact_id)
+      .eq("business_id", reminder.business_id)
       .eq("channel_id", whatsappChannel!.id)
       .maybeSingle(),
     supabase
       .from("contact_channel_identities")
       .select("id, opted_out_at, last_inbound_at")
       .eq("contact_id", reminder.contact_id)
+      .eq("business_id", reminder.business_id)
       .eq("channel_id", instagramChannel!.id)
       .maybeSingle(),
   ]);
@@ -181,7 +221,7 @@ async function processReminder(
   const targetChannelId = selection.outcome === "whatsapp" ? whatsappChannel!.id : instagramChannel!.id;
 
   try {
-    const providerUserId = await resolveProviderUserId(supabase, reminder.contact_id, targetChannelId);
+    const providerUserId = await resolveProviderUserId(supabase, reminder.contact_id, reminder.business_id, targetChannelId);
     const content = await resolveReminderContent(supabase, reminder, selection.outcome);
 
     const provider = getChannelProvider(selection.outcome);
@@ -216,11 +256,17 @@ async function processReminder(
   }
 }
 
-async function resolveProviderUserId(supabase: ServiceClient, contactId: string, channelId: string): Promise<string> {
+async function resolveProviderUserId(
+  supabase: ServiceClient,
+  contactId: string,
+  businessId: string,
+  channelId: string,
+): Promise<string> {
   const { data, error } = await supabase
     .from("contact_channel_identities")
     .select("provider_user_id")
     .eq("contact_id", contactId)
+    .eq("business_id", businessId)
     .eq("channel_id", channelId)
     .single();
   if (error) throw new Error(`Could not resolve provider_user_id: ${error.message}`);

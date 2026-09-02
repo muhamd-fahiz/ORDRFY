@@ -37,6 +37,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0026](0026-dev-mode-mobile-and-tunnel-hydration-fixes.md) | Dev-mode mobile testing and Cloudflare Tunnel hydration fixes -- allowedDevOrigins wildcard, MailtoButton | Accepted |
 | [0027](0027-simplicity-pass-plain-language-and-safe-dropdowns.md) | Simplicity pass -- plain business language, safe Settings dropdowns, hidden empty states | Accepted |
 | [0028](0028-per-contact-manual-takeover-scope.md) | Per-contact manual takeover -- scoped design, not approved for implementation | Proposed |
+| [0029](0029-cross-tenant-integrity-fixes-pre-hardening.md) | Cross-tenant integrity fixes -- contact/business guard trigger, manual reminder-trigger scoping | Accepted |
 
 ## Migration note
 

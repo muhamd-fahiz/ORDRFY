@@ -27,12 +27,16 @@ function manualIdempotencyKey(contactId: string): string {
  * user_id = auth.uid())) is what actually allows or blocks this insert, the same RLS
  * mechanism already proven against cross-tenant reads. Processing the reminder, however, is
  * a legitimate service-role operation: runReminderEngineOnce() is the real Phase 2 engine
- * (the same function app/api/cron/reminders/route.ts calls on a schedule), and by nature it
- * has to see every business's due reminders, not just this tenant's -- that's not a
- * tenant-scoped read, it's the background job. Calling it directly (not over HTTP) is safe
- * here because this route itself is already behind a verified owner session; the shared
- * secret on /api/cron/reminders exists to gate the *public* HTTP endpoint from an untrusted
- * caller, not to gate trusted server code calling the function directly.
+ * (the same function app/api/cron/reminders/route.ts calls on a schedule). Calling it
+ * directly (not over HTTP) is safe here because this route itself is already behind a
+ * verified owner session; the shared secret on /api/cron/reminders exists to gate the
+ * *public* HTTP endpoint from an untrusted caller, not to gate trusted server code calling
+ * the function directly. It's called below with { onlyReminderId: inserted.id } -- a
+ * confirmed cross-tenant fix -- so this manual trigger claims and processes only the single
+ * reminder this request just created, not the entire global due-reminder queue. Without
+ * that scoping, this call would claim and send any other business's already-due reminder
+ * too, as an incidental side effect of one tenant's own action. The cron path (no argument)
+ * is unaffected and still drains the full queue every 5 minutes as before.
  */
 export async function POST(request: NextRequest) {
   const state = await getOwnerSessionState();
@@ -134,7 +138,8 @@ export async function POST(request: NextRequest) {
 
   // Runs the real engine synchronously so the owner sees an actual outcome on this single
   // tap, rather than waiting for the next 5-minute cron tick with no feedback at all.
-  await runReminderEngineOnce();
+  // Scoped to exactly this reminder -- see runReminderEngineOnce()'s own doc comment.
+  await runReminderEngineOnce({ onlyReminderId: inserted.id });
 
   const { data: finalReminder } = await supabase
     .from("reminders")
