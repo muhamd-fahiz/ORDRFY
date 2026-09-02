@@ -15,7 +15,7 @@ export default async function ProtectedAdminLayout({
     <div>
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-15 px-4 py-4 sm:px-8 sm:py-5 lg:px-12 lg:py-6">
         <nav className="flex flex-wrap items-center gap-6 lg:gap-8">
-          <Link href="/admin/businesses" aria-label="Ordrfy — home" className="flex origin-left items-center gap-2 scale-125">
+          <Link href="/admin/businesses" aria-label="Ordrfy — home" className="flex items-center gap-2.5">
             <Logo variant="lockup" tone="on-paper" size="md" />
             <span className="rounded-[3px] bg-ink-15 px-1.5 py-0.5 font-data text-[10px] font-bold tracking-[0.1em] text-ink-70">
               ADMIN
