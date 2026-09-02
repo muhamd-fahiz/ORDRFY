@@ -38,6 +38,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0027](0027-simplicity-pass-plain-language-and-safe-dropdowns.md) | Simplicity pass -- plain business language, safe Settings dropdowns, hidden empty states | Accepted |
 | [0028](0028-per-contact-manual-takeover-scope.md) | Per-contact manual takeover -- scoped design, not approved for implementation | Proposed |
 | [0029](0029-cross-tenant-integrity-fixes-pre-hardening.md) | Cross-tenant integrity fixes -- contact/business guard trigger, manual reminder-trigger scoping | Accepted |
+| [0030](0030-timezone-and-webhook-recovery-fixes.md) | Manual reminder timezone fix (IST calendar day) and webhook recovery worker | Accepted |
 
 ## Migration note
 

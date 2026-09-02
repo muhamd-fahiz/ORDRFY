@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getOwnerSessionState } from "@/lib/auth/owner-guard";
 import { createRlsClient } from "@/lib/db/server";
 import { runReminderEngineOnce } from "@/lib/engine/reminders";
+import { getBusinessDateString } from "@/lib/engine/business-day";
 
 // The only reminder_type with real seeded template content across verticals today
 // (fashion_payment_due, baker_payment_due, ...) -- a generic "send reminder" tap has no way
@@ -14,10 +15,14 @@ const REMINDER_TYPE = "payment_due";
  * At most one manually-triggered reminder per contact per calendar day -- reminders.
  * idempotency_key is a permanent unique constraint, so this key format is what actually
  * prevents an accidental double-tap (or a retry) from creating a duplicate send, while still
- * allowing a fresh manual reminder tomorrow if genuinely needed again.
+ * allowing a fresh manual reminder tomorrow if genuinely needed again. "Today" is computed
+ * in the business's own timezone (getBusinessDateString), not the server's UTC clock --
+ * using UTC directly was a confirmed bug (independent audit): IST is UTC+5:30, so the UTC
+ * date doesn't roll over until 5:30 AM IST, producing a false "already sent today" rejection
+ * (or, on the other side of that boundary, a false allow) for a real 5.5-hour window every day.
  */
-function manualIdempotencyKey(contactId: string): string {
-  const today = new Date().toISOString().slice(0, 10);
+function manualIdempotencyKey(contactId: string, timezone: string, now?: Date): string {
+  const today = getBusinessDateString(timezone, now);
   return `manual-${contactId}-${REMINDER_TYPE}-${today}`;
 }
 
@@ -80,7 +85,7 @@ export async function POST(request: NextRequest) {
 
   const { data: business, error: businessError } = await supabase
     .from("businesses")
-    .select("vertical")
+    .select("vertical, timezone")
     .eq("id", state.businessId)
     .single();
   if (businessError) {
@@ -111,7 +116,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
   const templateId = businessTemplate?.id ?? verticalDefaultTemplate?.id ?? null;
 
-  const idempotencyKey = manualIdempotencyKey(contactId);
+  const idempotencyKey = manualIdempotencyKey(contactId, business.timezone);
 
   const { data: inserted, error: insertError } = await supabase
     .from("reminders")

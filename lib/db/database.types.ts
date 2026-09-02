@@ -1250,6 +1250,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      claim_stuck_webhook_event: {
+        Args: { p_timeout_minutes?: number }
+        Returns: {
+          business_id: string | null
+          channel_id: string
+          id: string
+          processed_at: string | null
+          provider: string
+          provider_event_id: string | null
+          raw_payload: Json
+          received_at: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "webhook_events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_provider_credential: {
         Args: { p_secret_id: string }
         Returns: undefined

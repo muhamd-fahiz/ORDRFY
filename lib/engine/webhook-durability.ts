@@ -1,8 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
 import type { ChannelName } from "@/lib/channels/types";
+import { createServiceRoleClient } from "@/lib/db/server";
+import { getChannelProvider } from "@/lib/channels/factory";
+import { resolveBusinessIdFromProviderAccount } from "./business-resolution";
+import { processInboundMessage } from "./automation";
 
 type Client = SupabaseClient<Database>;
+
+const MAX_RECOVERED_PER_RUN = 50;
 
 /**
  * verify signature -> durably store -> ack 200 -> THEN process (Non-Negotiable
@@ -83,4 +89,79 @@ export async function markWebhookFailed(supabase: Client, eventId: string, error
       event_detail: { webhook_event_id: eventId, error: String(error) },
     });
   }
+}
+
+export interface WebhookRecoveryResult {
+  recovered: number;
+  processed: number;
+  failed: number;
+}
+
+/**
+ * Confirmed gap fix (independent audit): a webhook_events row can be left stuck in
+ * 'received' forever if the server process dies in the window between acking the provider
+ * and app/api/webhooks/{whatsapp,instagram}/route.ts's after() callback finishing --
+ * because the provider already got its 200, it never retries, so nothing else would ever
+ * revisit that row. This re-derives everything needed to reprocess purely from the
+ * already-durably-stored row (raw_payload, provider, channel_id); it does not call into or
+ * modify either webhook route's own inline processing logic, which stays exactly as it was.
+ *
+ * Self-contained (creates its own service-role client), matching runReminderEngineOnce()'s
+ * own pattern -- both are invoked from the same cron tick (app/api/cron/reminders/route.ts),
+ * reusing the existing pg_cron schedule/secret/endpoint rather than a second one.
+ *
+ * Safe under a concurrent race with a still-legitimately-in-flight original request (in
+ * practice never observed, since claim_stuck_webhook_event() only claims rows idle past the
+ * timeout): processInboundMessage()'s own idempotency (the unique index on
+ * messages(provider, provider_message_id)) means even a genuine double-attempt cannot
+ * produce a duplicate message or a duplicate auto-reply -- the second attempt's insert
+ * simply hits a 23505 and returns early, exactly as it already does for a duplicate live
+ * webhook delivery.
+ */
+export async function recoverStuckWebhookEvents(timeoutMinutes = 10): Promise<WebhookRecoveryResult> {
+  const supabase = createServiceRoleClient();
+  const result: WebhookRecoveryResult = { recovered: 0, processed: 0, failed: 0 };
+
+  for (let i = 0; i < MAX_RECOVERED_PER_RUN; i++) {
+    const { data: claimed, error } = await supabase.rpc("claim_stuck_webhook_event", {
+      p_timeout_minutes: timeoutMinutes,
+    });
+    if (error) throw new Error(`claim_stuck_webhook_event failed: ${error.message}`);
+    if (!claimed || !claimed.id) break;
+
+    result.recovered++;
+
+    try {
+      const { data: channelRow, error: channelError } = await supabase
+        .from("channels")
+        .select("name")
+        .eq("id", claimed.channel_id)
+        .single();
+      if (channelError) throw new Error(`Unknown channel_id ${claimed.channel_id}: ${channelError.message}`);
+
+      const payload = claimed.raw_payload as { businessProviderAccountId?: string } | null;
+      if (!payload?.businessProviderAccountId) {
+        throw new Error("raw_payload is missing businessProviderAccountId");
+      }
+
+      const channelName = channelRow.name as ChannelName;
+      const businessId = await resolveBusinessIdFromProviderAccount(supabase, channelName, payload.businessProviderAccountId);
+      if (!businessId) {
+        await markWebhookFailed(supabase, claimed.id, "no connected business found for businessProviderAccountId");
+        result.failed++;
+        continue;
+      }
+
+      const provider = getChannelProvider(channelName);
+      const normalized = provider.normalizeInboundMessage(claimed.raw_payload);
+      await processInboundMessage(supabase, businessId, normalized);
+      await markWebhookProcessed(supabase, claimed.id, businessId);
+      result.processed++;
+    } catch (recoverError) {
+      await markWebhookFailed(supabase, claimed.id, recoverError);
+      result.failed++;
+    }
+  }
+
+  return result;
 }
