@@ -1,4 +1,5 @@
 import type { MARKETING_CONFIG } from "@/lib/marketing/content";
+import { getWhatsAppLink } from "@/lib/marketing/whatsapp";
 
 interface PricingProps {
   period?: (typeof MARKETING_CONFIG)["pricingPeriod"];
@@ -45,6 +46,7 @@ export function Pricing({ period = "per month" }: PricingProps) {
             features={["Multiple businesses", "Staff accounts", "Reports + exports", "Priority support"]}
             ctaLabel="Talk to us"
             ctaVariant="outline"
+            ctaHref={getWhatsAppLink("Hi, I'd like to know more about the Studio plan.")}
           />
         </div>
 
@@ -63,10 +65,12 @@ interface PlanCardProps {
   features: string[];
   ctaLabel: string;
   ctaVariant: "outline" | "filled";
+  /** Defaults to the "#start" anchor-scroll every other plan uses; Studio's "Talk to us" is a WhatsApp deep link instead. */
+  ctaHref?: string;
   featured?: boolean;
 }
 
-function PlanCard({ title, blurb, period, features, ctaLabel, ctaVariant, featured = false }: PlanCardProps) {
+function PlanCard({ title, blurb, period, features, ctaLabel, ctaVariant, ctaHref = "#start", featured = false }: PlanCardProps) {
   const isDark = featured;
   return (
     <div
@@ -91,7 +95,8 @@ function PlanCard({ title, blurb, period, features, ctaLabel, ctaVariant, featur
         ))}
       </div>
       <a
-        href="#start"
+        href={ctaHref}
+        {...(ctaHref.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
         className={`block rounded-[5px] p-[13px] text-center font-display text-[13.5px] transition-colors ${
           ctaVariant === "filled"
             ? "bg-pink font-bold text-white hover:bg-pink-hover"

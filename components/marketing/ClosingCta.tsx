@@ -1,4 +1,5 @@
 import { MARKETING_CONFIG } from "@/lib/marketing/content";
+import { getWhatsAppLink } from "@/lib/marketing/whatsapp";
 import { MailtoButton } from "./MailtoButton";
 
 export function ClosingCta() {
@@ -17,24 +18,36 @@ export function ClosingCta() {
           </p>
         </div>
         <div className="flex w-full max-w-[380px] flex-col gap-3">
-          <MailtoButton
-            subject="Early access request"
+          <a
+            href={getWhatsAppLink("Hi, I'd like early access to Ordrfy.")}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-md bg-ink px-6 py-[18px] text-center font-display text-[15px] font-bold text-paper-warm transition-colors hover:bg-black"
           >
             Request Early Access
-          </MailtoButton>
-          <MailtoButton
-            subject="Question about Ordrfy"
+          </a>
+          <a
+            href={getWhatsAppLink("Hi, I have a question about Ordrfy.")}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-md border border-paper-warm/60 px-6 py-[18px] text-center font-display text-[15px] font-semibold text-paper-warm transition-colors hover:border-paper-warm"
           >
-            Email us
-          </MailtoButton>
+            Message us on WhatsApp
+          </a>
           <div className="flex items-center justify-center gap-2.5 font-data text-[11px] tracking-[0.08em] text-paper-warm/75">
             <span className="grid h-[19px] w-[19px] flex-none place-items-center rounded-full bg-ink leading-none" aria-hidden="true">
               <span className="font-display text-[10px] font-extrabold leading-[0.78] text-paper-warm">o</span>
             </span>
             SET UP IN ENGLISH, HINDI OR HINGLISH
           </div>
+          {/* Secondary, deliberately minimal -- WhatsApp is the primary contact path for
+              this audience; email is a fallback for later, not a second prominent button. */}
+          <MailtoButton
+            subject="Question about Ordrfy"
+            className="mt-1 text-center font-app text-[12.5px] text-paper-warm/70 underline-offset-2 hover:text-paper-warm hover:underline"
+          >
+            Or contact us by email
+          </MailtoButton>
         </div>
       </div>
     </section>

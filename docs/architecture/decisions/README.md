@@ -39,6 +39,7 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0028](0028-per-contact-manual-takeover-scope.md) | Per-contact manual takeover -- scoped design, not approved for implementation | Proposed |
 | [0029](0029-cross-tenant-integrity-fixes-pre-hardening.md) | Cross-tenant integrity fixes -- contact/business guard trigger, manual reminder-trigger scoping | Accepted |
 | [0030](0030-timezone-and-webhook-recovery-fixes.md) | Manual reminder timezone fix (IST calendar day) and webhook recovery worker | Accepted |
+| [0031](0031-marketing-sticky-header-fix-and-whatsapp-contact.md) | Marketing sticky-header bug fix, WhatsApp contact CTAs, About Us placeholder | Accepted |
 
 ## Migration note
 

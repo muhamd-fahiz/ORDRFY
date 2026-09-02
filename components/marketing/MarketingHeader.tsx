@@ -5,6 +5,7 @@ const NAV_LINKS = [
   { href: "#how", label: "How it works" },
   { href: "#verticals", label: "Who it's for" },
   { href: "#pricing", label: "Pricing" },
+  { href: "#about", label: "About us" },
 ];
 
 export function MarketingHeader() {

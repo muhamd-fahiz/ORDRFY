@@ -150,4 +150,10 @@ export const MARKETING_CONFIG = {
   freeOrders: 50,
   pricingPeriod: "per month" as "per month" | "per year" | "billed yearly",
   showFaq: true,
+  // PLACEHOLDER -- there is no real Ordrfy WhatsApp Business number yet (same gap
+  // documented in CLAUDE.md's known blockers). Every digit here is a dummy value; replace
+  // with the real number (with country code, digits only, no "+" or spaces -- wa.me's own
+  // required format) the moment it exists. Every "contact us" CTA on the marketing site
+  // reads this one value, so replacing it here is the only change needed.
+  whatsappNumber: "910000000000",
 };
