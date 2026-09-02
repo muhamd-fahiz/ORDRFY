@@ -24,6 +24,9 @@ export default async function ProtectedAdminLayout({
           <Link href="/admin/businesses" className="font-app text-base text-ink-70 hover:text-ink lg:text-lg">
             Businesses
           </Link>
+          <Link href="/admin/subscriptions" className="font-app text-base text-ink-70 hover:text-ink lg:text-lg">
+            Subscriptions
+          </Link>
           <Link href="/admin/settings" className="font-app text-base text-ink-70 hover:text-ink lg:text-lg">
             Settings
           </Link>

@@ -199,7 +199,16 @@ async function main() {
       `count=${inboundMessagesAfterSecondRun?.length}`,
     );
   } finally {
-    if (bizId) await supabase.from("businesses").delete().eq("id", bizId);
+    // webhook_events.business_id has no ON DELETE CASCADE (unlike contacts/messages/
+    // reminders/payments) -- deleting the business first without this leaves an orphaned
+    // webhook_events row and silently fails the businesses delete itself (found the hard
+    // way: a stray "Webhook Recovery Test ..." business survived in real admin-panel views
+    // from an earlier run whose cleanup error was never checked).
+    if (bizId) {
+      await supabase.from("webhook_events").delete().eq("business_id", bizId);
+      const { error: cleanupError } = await supabase.from("businesses").delete().eq("id", bizId);
+      if (cleanupError) console.error(`Cleanup failed: ${cleanupError.message}`);
+    }
   }
 
   const failed = results.filter((r) => !r.pass);
