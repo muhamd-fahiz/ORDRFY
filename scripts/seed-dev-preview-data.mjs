@@ -10,7 +10,7 @@
 // DELETE CASCADE, so any owner account created against one of these businesses (via the
 // admin panel's "Create owner account") silently loses its membership row -- the auth.users
 // row survives, the business_memberships link does not. The script now restores membership
-// automatically for the two known dev-preview owner emails (see KNOWN_OWNERS below) after
+// automatically for the known dev-preview owner emails, one per vertical (see KNOWN_OWNERS below) after
 // recreating the businesses, so this is no longer something to remember to fix by hand --
 // but it's still worth knowing about if you create an owner account under a *different*
 // email against these fixture businesses, since that one isn't in KNOWN_OWNERS.
@@ -260,6 +260,9 @@ async function main() {
   const KNOWN_OWNERS = [
     { email: "meera.owner@example.com", businessId: BIZ_FASHION },
     { email: "sweetcrumb.owner@example.com", businessId: BIZ_BAKER },
+    { email: "glow.owner@example.com", businessId: BIZ_SERVICE },
+    { email: "brightminds.owner@example.com", businessId: BIZ_TUTOR },
+    { email: "wrapped.owner@example.com", businessId: BIZ_GIFT },
   ];
   for (const { email, businessId } of KNOWN_OWNERS) {
     const { data: user } = await supabase.auth.admin.listUsers();
