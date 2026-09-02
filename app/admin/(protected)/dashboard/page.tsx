@@ -14,89 +14,84 @@ function StatCard({ label, value, hint }: { label: string; value: string; hint?:
   );
 }
 
+/**
+ * "My customers" here means Ordrfy's own customers -- the businesses themselves -- never
+ * the businesses' own end-customers. Deliberately does not touch contacts/messages/payments
+ * (those tables are about a business's own customers, not Ordrfy's relationship to the
+ * business) -- corrected after building the wrong thing once already (see ADR-0034's
+ * revision history / this session's own correction). Every number here comes from
+ * businesses + business_settings only.
+ */
 export default async function AdminDashboardPage() {
   const supabase = createServiceRoleClient();
 
-  const [{ data: businesses, error: businessesError }, { data: contacts, error: contactsError }, { data: payments, error: paymentsError }, { data: amountSettings, error: amountError }, { count: unresolvedAttentionCount, error: attentionError }] =
-    await Promise.all([
-      supabase.from("businesses").select("id, name, vertical, subscription_status").is("deleted_at", null),
-      supabase.from("contacts").select("business_id"),
-      supabase.from("payments").select("business_id, amount_paid"),
-      supabase.from("business_settings").select("business_id, setting_value").eq("setting_key", SUBSCRIPTION_AMOUNT_SETTING_KEY),
-      supabase.from("owner_attention_queue").select("id", { count: "exact", head: true }).is("resolved_at", null),
-    ]);
-
+  const [{ data: businesses, error: businessesError }, { data: amountSettings, error: amountError }] = await Promise.all([
+    supabase.from("businesses").select("id, vertical, subscription_status").is("deleted_at", null),
+    supabase.from("business_settings").select("business_id, setting_value").eq("setting_key", SUBSCRIPTION_AMOUNT_SETTING_KEY),
+  ]);
   if (businessesError) throw new Error(`Failed to load businesses: ${businessesError.message}`);
-  if (contactsError) throw new Error(`Failed to load contacts: ${contactsError.message}`);
-  if (paymentsError) throw new Error(`Failed to load payments: ${paymentsError.message}`);
   if (amountError) throw new Error(`Failed to load subscription amounts: ${amountError.message}`);
-  if (attentionError) throw new Error(`Failed to load attention queue: ${attentionError.message}`);
 
-  const contactCountByBusiness = new Map<string, number>();
-  for (const c of contacts ?? []) {
-    contactCountByBusiness.set(c.business_id, (contactCountByBusiness.get(c.business_id) ?? 0) + 1);
-  }
+  const { data: verticals, error: verticalsError } = await supabase
+    .from("verticals")
+    .select("key, label")
+    .eq("active", true)
+    .order("key");
+  if (verticalsError) throw new Error(`Failed to load verticals: ${verticalsError.message}`);
 
-  const paidByBusiness = new Map<string, number>();
-  for (const p of payments ?? []) {
-    paidByBusiness.set(p.business_id, (paidByBusiness.get(p.business_id) ?? 0) + Number(p.amount_paid));
-  }
-
-  const subscriptionAmountByBusiness = new Map<string, number>();
-  for (const s of amountSettings ?? []) {
-    subscriptionAmountByBusiness.set(s.business_id, Number(s.setting_value));
-  }
+  const amountByBusinessId = new Map((amountSettings ?? []).map((s) => [s.business_id, Number(s.setting_value)]));
 
   const totalBusinesses = businesses.length;
   const activeCount = businesses.filter((b) => b.subscription_status === "active").length;
   const trialCount = businesses.filter((b) => b.subscription_status === "trial").length;
-  const totalCustomers = contacts?.length ?? 0;
-  const totalOrderValueTracked = [...paidByBusiness.values()].reduce((sum, v) => sum + v, 0);
-  const totalManualSubscriptionRevenue = [...subscriptionAmountByBusiness.values()].reduce((sum, v) => sum + v, 0);
+  const totalSubscriptionRevenue = [...amountByBusinessId.values()].reduce((sum, v) => sum + v, 0);
+  const businessesWithoutAmount = totalBusinesses - amountByBusinessId.size;
 
-  const customersByBusiness = businesses
-    .map((b) => ({ label: b.name, value: contactCountByBusiness.get(b.id) ?? 0 }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
+  const businessCountByVertical = new Map<string, number>();
+  const revenueByVertical = new Map<string, number>();
+  for (const b of businesses) {
+    businessCountByVertical.set(b.vertical, (businessCountByVertical.get(b.vertical) ?? 0) + 1);
+    const amount = amountByBusinessId.get(b.id) ?? 0;
+    revenueByVertical.set(b.vertical, (revenueByVertical.get(b.vertical) ?? 0) + amount);
+  }
 
-  const orderValueByBusiness = businesses
-    .map((b) => ({ label: b.name, value: paidByBusiness.get(b.id) ?? 0 }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
+  const businessesByVerticalChart = (verticals ?? [])
+    .map((v) => ({ label: v.label, value: businessCountByVertical.get(v.key) ?? 0 }))
+    .sort((a, b) => b.value - a.value);
+
+  const revenueByVerticalChart = (verticals ?? [])
+    .map((v) => ({ label: v.label, value: revenueByVertical.get(v.key) ?? 0 }))
+    .sort((a, b) => b.value - a.value);
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
       <h1 className="font-display text-3xl font-bold sm:text-4xl lg:text-5xl">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Businesses" value={String(totalBusinesses)} />
         <StatCard label="Active" value={String(activeCount)} />
         <StatCard label="Trial" value={String(trialCount)} />
-        <StatCard label="Customers" value={String(totalCustomers)} hint="across all businesses" />
-        <StatCard label="Order value tracked" value={formatRupees(totalOrderValueTracked)} hint="sum of payments.amount_paid" />
-        <StatCard label="Needs attention" value={String(unresolvedAttentionCount ?? 0)} hint="unresolved, all businesses" />
+        <StatCard label="Subscription revenue" value={formatRupees(totalSubscriptionRevenue)} hint="manually tracked" />
       </div>
 
-      <div className="rounded-xl border border-ink-15 bg-ink-15/20 p-5 font-app text-base text-ink-70 lg:p-6 lg:text-lg">
-        Manually-tracked subscription revenue (Subscriptions tab, not a real invoice):{" "}
-        <span className="font-data font-bold text-ink">{formatRupees(totalManualSubscriptionRevenue)}</span>
-        {subscriptionAmountByBusiness.size < totalBusinesses && (
-          <span className="text-ink-40"> — {totalBusinesses - subscriptionAmountByBusiness.size} business(es) have no amount set yet.</span>
-        )}
-      </div>
+      {businessesWithoutAmount > 0 && (
+        <p className="font-app text-base text-ink-40 lg:text-lg">
+          {businessesWithoutAmount} of {totalBusinesses} business(es) have no subscription amount set yet (Subscriptions tab).
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
         <BarList
-          title="Most customers by business"
-          items={customersByBusiness}
+          title="Businesses by vertical"
+          items={businessesByVerticalChart}
           formatValue={(n) => String(n)}
-          emptyLabel="No customers yet."
+          emptyLabel="No businesses yet."
         />
         <BarList
-          title="Most order value by business"
-          items={orderValueByBusiness}
+          title="Subscription revenue by vertical"
+          items={revenueByVerticalChart}
           formatValue={(n) => formatRupees(n)}
-          emptyLabel="No payments recorded yet."
+          emptyLabel="No subscription amounts set yet."
         />
       </div>
     </div>
