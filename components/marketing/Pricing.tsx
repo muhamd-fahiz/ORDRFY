@@ -9,16 +9,11 @@ export function Pricing({ period = "per month" }: PricingProps) {
   return (
     <section id="pricing" className="bg-paper px-5 py-14 sm:px-14 sm:py-24">
       <div className="mx-auto max-w-[1240px]">
-        <div className="mb-7 flex flex-wrap items-baseline justify-between gap-4 sm:mb-10">
-          <div>
-            <div className="mb-3.5 font-data text-[11px] font-bold tracking-[0.16em] text-pink">PRICING</div>
-            <h2 className="max-w-[600px] font-display text-[26px] font-bold leading-[1.06] tracking-[-0.03em] text-ink sm:text-[42px]">
-              Three plans. Numbers being finalised.
-            </h2>
-          </div>
-          <div className="border-2 border-dashed border-ink/30 px-[13px] py-[9px] font-data text-[11px] font-bold tracking-[0.1em] text-ink">
-            PLACEHOLDER · ₹ TBD
-          </div>
+        <div className="mb-7 sm:mb-10">
+          <div className="mb-3.5 font-data text-[11px] font-bold tracking-[0.16em] text-pink">PRICING</div>
+          <h2 className="max-w-[600px] font-display text-[26px] font-bold leading-[1.06] tracking-[-0.03em] text-ink sm:text-[42px]">
+            Simple plans. Pricing landing soon.
+          </h2>
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,270px),1fr))] items-start gap-4 sm:gap-6">
@@ -85,9 +80,11 @@ function PlanCard({ title, blurb, period, features, ctaLabel, ctaVariant, ctaHre
         )}
       </div>
       <p className={`mb-5 mt-2 text-[14.5px] leading-[1.5] ${isDark ? "text-paper/60" : "text-ink/60"}`}>{blurb}</p>
-      <div className={`flex flex-wrap items-baseline gap-2 border-b pb-[18px] ${isDark ? "border-paper/[0.14]" : "border-ink/[0.12]"}`}>
-        <span className={`font-data text-[36px] font-bold ${isDark ? "text-paper/35" : "text-ink/25"}`}>₹—</span>
-        <span className={`font-data text-[11px] tracking-[0.08em] ${isDark ? "text-paper/45" : "text-ink/45"}`}>{period}</span>
+      <div className={`border-b pb-[18px] ${isDark ? "border-paper/[0.14]" : "border-ink/[0.12]"}`}>
+        <div className={`font-display text-[15px] font-bold ${isDark ? "text-paper" : "text-ink"}`}>Early access</div>
+        <p className={`mt-1 text-[12.5px] leading-[1.4] ${isDark ? "text-paper/55" : "text-ink/55"}`}>
+          Locked in at today&apos;s rate, billed {period}, once pricing launches.
+        </p>
       </div>
       <div className={`my-[18px] grid gap-2.5 text-[15px] ${isDark ? "text-paper/[0.78]" : "text-ink/70"}`}>
         {features.map((feature) => (

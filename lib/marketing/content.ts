@@ -145,6 +145,28 @@ export const MARKETING_FAQS: FaqItem[] = [
   },
 ];
 
+export interface ChaosMessage {
+  from: string;
+  text: string;
+}
+
+/**
+ * A believable pile of separate, unrelated customer messages arriving the same day --
+ * ProblemRecognition renders these as a loose stack (too many messages, no order to them);
+ * TheShift pulls SHIFT_RESOLVED_MESSAGE_INDEX back out and resolves it into an order, on
+ * purpose reusing the exact same text rather than a fresh example, so the same conversation
+ * visibly becomes the payoff instead of two unrelated illustrations standing in for each other.
+ */
+export const CHAOS_MESSAGES: ChaosMessage[] = [
+  { from: "Priya", text: "Yeh size mein hai kya?" },
+  { from: "Rahul", text: "Order kab tak milega?" },
+  { from: "Neha", text: "Pichli baar wala hi bhej dena" },
+  { from: "Sana", text: "Kal tak ho jayega na?" },
+  { from: "Amit", text: "Advance bhej diya, confirm kar do" },
+];
+
+export const SHIFT_RESOLVED_MESSAGE_INDEX = 4;
+
 /** Mirrors the handoff's editable props (freeOrders / pricingPeriod / showFaq) as one place to adjust. */
 export const MARKETING_CONFIG = {
   freeOrders: 50,
