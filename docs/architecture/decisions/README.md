@@ -43,6 +43,10 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0032](0032-admin-panel-desktop-scale-vertical-dashboards-settings.md) | Admin panel desktop scale-up, per-vertical dashboards, Settings (profile/password/MFA) | Accepted |
 | [0033](0033-admin-subscriptions-tab.md) | Admin Subscriptions tab -- status/filters plus a manually-set amount | Accepted |
 | [0034](0034-admin-dashboard-tab.md) | Admin Dashboard tab -- real aggregates, hand-rolled charts, new landing page | Accepted |
+| [0035](0035-layered-ai-automation-phase1.md) | Layered AI automation, Phase 1 -- decision contract and audit schema only, no provider yet | Accepted |
+| [0036](0036-phase2-ai-classification-wiring.md) | Phase 2 -- AI classification provider wiring, automation_mode='smart' only | Accepted |
+| [0037](0037-webhook-recovery-and-audit-fixes.md) | Independent Phase 2 audit -- webhook recovery, tenant-guard, and validation fixes | Accepted |
+| [0038](0038-phase2-final-hardening.md) | Final Phase 2 hardening -- atomic message claiming, full retry-cap coverage, shared-rule vertical integrity | Accepted |
 
 ## Migration note
 

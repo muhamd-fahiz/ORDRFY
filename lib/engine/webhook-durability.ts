@@ -110,21 +110,25 @@ export interface WebhookRecoveryResult {
  * own pattern -- both are invoked from the same cron tick (app/api/cron/reminders/route.ts),
  * reusing the existing pg_cron schedule/secret/endpoint rather than a second one.
  *
- * Safe under a concurrent race with a still-legitimately-in-flight original request (in
- * practice never observed, since claim_stuck_webhook_event() only claims rows idle past the
- * timeout): processInboundMessage()'s own idempotency (the unique index on
- * messages(provider, provider_message_id)) means even a genuine double-attempt cannot
- * produce a duplicate message or a duplicate auto-reply -- the second attempt's insert
- * simply hits a 23505 and returns early, exactly as it already does for a duplicate live
- * webhook delivery.
+ * Extended (a second independent audit, docs/architecture/decisions/0037-webhook-recovery-and-audit-fixes.md)
+ * to also reclaim status='failed' rows, up to maxAttempts, at the database level
+ * (claim_stuck_webhook_event). A 'failed' row previously had NO recovery path at all -- a
+ * genuine processing exception after the message was durably stored (an audit-write failure,
+ * any later exception) was permanently unrecoverable. This is now safe specifically because
+ * processInboundMessage() itself was fixed to RESUME processing on a retried duplicate
+ * (via messages.automation_processed_at) rather than silently short-circuiting on it -- the
+ * corrected version of the claim this comment used to make: a retry's message insert hitting
+ * the (provider, provider_message_id) unique constraint is no longer treated as proof the
+ * message was already fully handled, only that it was already durably stored.
  */
-export async function recoverStuckWebhookEvents(timeoutMinutes = 10): Promise<WebhookRecoveryResult> {
+export async function recoverStuckWebhookEvents(timeoutMinutes = 10, maxAttempts = 5): Promise<WebhookRecoveryResult> {
   const supabase = createServiceRoleClient();
   const result: WebhookRecoveryResult = { recovered: 0, processed: 0, failed: 0 };
 
   for (let i = 0; i < MAX_RECOVERED_PER_RUN; i++) {
     const { data: claimed, error } = await supabase.rpc("claim_stuck_webhook_event", {
       p_timeout_minutes: timeoutMinutes,
+      p_max_attempts: maxAttempts,
     });
     if (error) throw new Error(`claim_stuck_webhook_event failed: ${error.message}`);
     if (!claimed || !claimed.id) break;

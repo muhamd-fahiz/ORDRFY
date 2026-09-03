@@ -103,6 +103,88 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_decision_log: {
+        Row: {
+          action: string
+          ai_model: string | null
+          ai_provider: string | null
+          business_id: string
+          capability: string | null
+          confidence: number | null
+          created_at: string
+          decision_source: string
+          detected_intent: string | null
+          detected_language: string | null
+          escalation_reason: string | null
+          fallback_reason: string | null
+          id: string
+          input_units: number | null
+          matched_rule_id: string | null
+          message_id: string
+          output_units: number | null
+        }
+        Insert: {
+          action: string
+          ai_model?: string | null
+          ai_provider?: string | null
+          business_id: string
+          capability?: string | null
+          confidence?: number | null
+          created_at?: string
+          decision_source: string
+          detected_intent?: string | null
+          detected_language?: string | null
+          escalation_reason?: string | null
+          fallback_reason?: string | null
+          id?: string
+          input_units?: number | null
+          matched_rule_id?: string | null
+          message_id: string
+          output_units?: number | null
+        }
+        Update: {
+          action?: string
+          ai_model?: string | null
+          ai_provider?: string | null
+          business_id?: string
+          capability?: string | null
+          confidence?: number | null
+          created_at?: string
+          decision_source?: string
+          detected_intent?: string | null
+          detected_language?: string | null
+          escalation_reason?: string | null
+          fallback_reason?: string | null
+          id?: string
+          input_units?: number | null
+          matched_rule_id?: string | null
+          message_id?: string
+          output_units?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_decision_log_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_decision_log_matched_rule_id_fkey"
+            columns: ["matched_rule_id"]
+            isOneToOne: false
+            referencedRelation: "internal_reply_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_decision_log_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: true
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_channel_connections: {
         Row: {
           business_id: string
@@ -562,6 +644,8 @@ export type Database = {
       }
       messages: {
         Row: {
+          automation_claimed_at: string | null
+          automation_processed_at: string | null
           business_id: string
           channel_id: string
           contact_id: string
@@ -580,6 +664,8 @@ export type Database = {
           send_status: string | null
         }
         Insert: {
+          automation_claimed_at?: string | null
+          automation_processed_at?: string | null
           business_id: string
           channel_id: string
           contact_id: string
@@ -598,6 +684,8 @@ export type Database = {
           send_status?: string | null
         }
         Update: {
+          automation_claimed_at?: string | null
+          automation_processed_at?: string | null
           business_id?: string
           channel_id?: string
           contact_id?: string
@@ -1130,6 +1218,7 @@ export type Database = {
       }
       webhook_events: {
         Row: {
+          attempt_count: number
           business_id: string | null
           channel_id: string
           id: string
@@ -1141,6 +1230,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          attempt_count?: number
           business_id?: string | null
           channel_id: string
           id?: string
@@ -1152,6 +1242,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          attempt_count?: number
           business_id?: string | null
           channel_id?: string
           id?: string
@@ -1251,8 +1342,9 @@ export type Database = {
         }
       }
       claim_stuck_webhook_event: {
-        Args: { p_timeout_minutes?: number }
+        Args: { p_max_attempts?: number; p_timeout_minutes?: number }
         Returns: {
+          attempt_count: number
           business_id: string | null
           channel_id: string
           id: string
