@@ -1,40 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
-export function LoginForm() {
-  const router = useRouter();
+export function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
     setError(null);
 
-    // Goes through a server route (not supabase.auth.signInWithPassword() directly from the
-    // browser) specifically so login attempts pass through server-side rate limiting first
-    // -- see app/api/app/login/route.ts.
-    const response = await fetch("/api/app/login", {
+    if (password !== confirmPassword) {
+      setError("Passwords don't match.");
+      return;
+    }
+
+    setSubmitting(true);
+    const response = await fetch("/api/app/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    const body = (await response.json()) as { ok?: boolean; error?: string; redirectTo?: string };
+    const body = (await response.json()) as { ok?: boolean; error?: string };
+    setSubmitting(false);
 
     if (!response.ok || !body.ok) {
       setError(body.error ?? "Something went wrong.");
-      setSubmitting(false);
       return;
     }
+    setDone(true);
+  }
 
-    router.replace(body.redirectTo ?? "/app/today");
-    router.refresh();
+  if (done) {
+    return (
+      <p className="rounded-lg bg-confirmed-soft p-3 text-sm text-ink">
+        Almost there — check your email and tap the link we sent to confirm your address.
+        We&apos;ll take you straight into setting up your business.
+      </p>
+    );
   }
 
   return (
@@ -55,18 +63,26 @@ export function LoginForm() {
         <input
           type="password"
           required
-          autoComplete="current-password"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="rounded-lg border border-ink-15 bg-paper-raised px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-strong"
         />
       </label>
-      <Link href="/app/forgot-password" className="-mt-1 self-end text-xs text-ink-70 underline-offset-2 hover:underline">
-        Forgot password?
-      </Link>
+      <label className="flex flex-col gap-1 text-sm text-ink">
+        Confirm password
+        <input
+          type="password"
+          required
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="rounded-lg border border-ink-15 bg-paper-raised px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-strong"
+        />
+      </label>
       {error && <p className="text-sm text-attention">{error}</p>}
       <Button type="submit" disabled={submitting}>
-        {submitting ? "Signing in..." : "Sign in"}
+        {submitting ? "Creating your account..." : "Create account"}
       </Button>
     </form>
   );

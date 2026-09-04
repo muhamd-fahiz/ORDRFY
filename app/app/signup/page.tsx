@@ -2,14 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getOwnerSessionState } from "@/lib/auth/owner-guard";
 import { AuthPageShell } from "@/components/ui/AuthPageShell";
-import { LoginForm } from "./login-form";
+import { SignupForm } from "./signup-form";
 
-export default async function OwnerLoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+export default async function SignupPage() {
   const state = await getOwnerSessionState();
 
   switch (state.status) {
@@ -29,18 +24,13 @@ export default async function OwnerLoginPage({
         <h1 className="font-display text-2xl font-bold text-ink">
           Chats in. <span className="text-pink">Orders out.</span>
         </h1>
-        <p className="mt-2 text-sm text-ink-70">Sign in to your Ordrfy account.</p>
+        <p className="mt-2 text-sm text-ink-70">Create your Ordrfy account.</p>
       </div>
-      {error === "no_membership" && (
-        <p className="rounded-lg bg-attention-soft p-2 text-sm text-attention">
-          That account isn&apos;t linked to a business yet. Contact Ordrfy support.
-        </p>
-      )}
-      <LoginForm />
+      <SignupForm />
       <p className="text-center text-sm text-ink-70">
-        New to Ordrfy?{" "}
-        <Link href="/app/signup" className="text-ink underline-offset-2 hover:underline">
-          Create an account
+        Already have an account?{" "}
+        <Link href="/app/login" className="text-ink underline-offset-2 hover:underline">
+          Sign in
         </Link>
       </p>
     </AuthPageShell>

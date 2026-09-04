@@ -48,6 +48,8 @@ rewrite history. Numbers are assigned in the order decisions were made and are n
 | [0037](0037-webhook-recovery-and-audit-fixes.md) | Independent Phase 2 audit -- webhook recovery, tenant-guard, and validation fixes | Accepted |
 | [0038](0038-phase2-final-hardening.md) | Final Phase 2 hardening -- atomic message claiming, full retry-cap coverage, shared-rule vertical integrity | Accepted |
 | [0039](0039-marketing-homepage-story-redesign.md) | Marketing homepage story redesign -- chaos/organization/control narrative, About Us retired into Trust | Accepted |
+| [0040](0040-self-service-signup-and-provisioning-core.md) | Self-service signup and shared ProvisioningCore -- deferred tenant provisioning, ghost-tenant prevention, admin/expired-draft routing | Accepted |
+| [0041](0041-deterministic-onboarding-knowledge-engine.md) | Deterministic onboarding knowledge engine -- vertical detection, disambiguation, dormant AI boundary | Accepted |
 
 ## Migration note
 

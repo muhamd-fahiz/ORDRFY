@@ -274,6 +274,57 @@ export type Database = {
           },
         ]
       }
+      business_knowledge_profiles: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          knowledge_version: number
+          source: string
+          structured_answers: Json
+          summary: string
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          knowledge_version?: number
+          source?: string
+          structured_answers?: Json
+          summary: string
+          updated_at?: string
+          vertical: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          knowledge_version?: number
+          source?: string
+          structured_answers?: Json
+          summary?: string
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_knowledge_profiles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_knowledge_profiles_vertical_fkey"
+            columns: ["vertical"]
+            isOneToOne: false
+            referencedRelation: "verticals"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       business_memberships: {
         Row: {
           business_id: string
@@ -1133,6 +1184,75 @@ export type Database = {
           },
         ]
       }
+      signup_drafts: {
+        Row: {
+          business_name: string | null
+          city: string | null
+          completed_at: string | null
+          created_at: string
+          current_step: string | null
+          detected_vertical: string | null
+          expires_at: string
+          id: string
+          provisioned_business_id: string | null
+          raw_business_description: string | null
+          status: string
+          structured_answers: Json
+          updated_at: string
+          user_id: string
+          vertical_confidence: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          city?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_step?: string | null
+          detected_vertical?: string | null
+          expires_at?: string
+          id?: string
+          provisioned_business_id?: string | null
+          raw_business_description?: string | null
+          status?: string
+          structured_answers?: Json
+          updated_at?: string
+          user_id: string
+          vertical_confidence?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          city?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_step?: string | null
+          detected_vertical?: string | null
+          expires_at?: string
+          id?: string
+          provisioned_business_id?: string | null
+          raw_business_description?: string | null
+          status?: string
+          structured_answers?: Json
+          updated_at?: string
+          user_id?: string
+          vertical_confidence?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signup_drafts_detected_vertical_fkey"
+            columns: ["detected_vertical"]
+            isOneToOne: false
+            referencedRelation: "verticals"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "signup_drafts_provisioned_business_id_fkey"
+            columns: ["provisioned_business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_health: {
         Row: {
           job_key: string
@@ -1366,11 +1486,70 @@ export type Database = {
         Args: { p_secret_id: string }
         Returns: undefined
       }
+      expire_stale_signup_drafts: { Args: never; Returns: number }
+      finish_onboarding: {
+        Args: { p_draft_id: string }
+        Returns: {
+          automation_paused: boolean
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          preferred_language: string
+          subscription_status: string
+          timezone: string
+          trial_ends_at: string | null
+          vertical: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "businesses"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_provider_credential: {
         Args: { p_secret_id: string }
         Returns: string
       }
       get_secret_id_by_name: { Args: { p_name: string }; Returns: string }
+      provision_business: {
+        Args: {
+          p_actor_user_id?: string
+          p_email?: string
+          p_knowledge_profile?: Json
+          p_name: string
+          p_owner_user_id?: string
+          p_phone?: string
+          p_preferred_language?: string
+          p_source?: string
+          p_subscription_status?: string
+          p_timezone?: string
+          p_vertical: string
+        }
+        Returns: {
+          automation_paused: boolean
+          created_at: string
+          deleted_at: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          preferred_language: string
+          subscription_status: string
+          timezone: string
+          trial_ends_at: string | null
+          vertical: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "businesses"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       record_reminder_engine_heartbeat: { Args: never; Returns: undefined }
       recover_stuck_reminders: {
         Args: { p_timeout_minutes?: number }
