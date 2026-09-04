@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectVertical } from "@/lib/onboarding/detect-vertical";
+import { detectVertical, resolveConfirmCandidates } from "@/lib/onboarding/detect-vertical";
 import { VERTICAL_KNOWLEDGE_DEFINITIONS } from "@/lib/onboarding/verticals";
 import { VERTICAL_META } from "@/lib/design/verticals";
 
@@ -129,5 +129,34 @@ describe("VerticalKey compatibility", () => {
   it("gives every vertical a unique knowledge definition", () => {
     const definedKeys = VERTICAL_KNOWLEDGE_DEFINITIONS.map((definition) => definition.vertical);
     expect(new Set(definedKeys).size).toBe(definedKeys.length);
+  });
+});
+
+describe("resolveConfirmCandidates", () => {
+  it("returns exactly the close candidates for an ambiguous result", () => {
+    const result = detectVertical("I run a boutique");
+    expect(result.status).toBe("ambiguous");
+    const candidates = resolveConfirmCandidates(result).sort();
+    expect(candidates).toEqual(["fashion", "service"]);
+  });
+
+  it("returns all 5 real verticals for an unmatched result -- never a fake 'generic' one", () => {
+    const result = detectVertical("asdkfj random text nothing relevant here whatsoever");
+    expect(result.status).toBe("unmatched");
+    const candidates = resolveConfirmCandidates(result).sort();
+    expect(candidates).toEqual(["baker", "fashion", "gift", "service", "tutor"]);
+  });
+
+  it("returns a single-element array for a confident result", () => {
+    const result = detectVertical("I sell kurtis, sarees and dresses through Instagram");
+    expect(result.status).toBe("confident");
+    expect(resolveConfirmCandidates(result)).toEqual(["fashion"]);
+  });
+
+  it("is deterministic -- re-running detectVertical on the same input never changes the resolved candidates (the resume-fix's core guarantee)", () => {
+    const description = "I run a boutique";
+    const first = resolveConfirmCandidates(detectVertical(description));
+    const second = resolveConfirmCandidates(detectVertical(description));
+    expect(second).toEqual(first);
   });
 });

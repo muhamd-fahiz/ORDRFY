@@ -14,7 +14,10 @@ export function DescriptionStep({ description, onChangeDescription, onContinue, 
   const canContinue = description.trim().length > 0;
 
   return (
-    <div className="flex flex-col gap-3">
+    // Capped narrower than the page's own responsive stage -- a very wide single textarea
+    // hurts reading/typing comfort rather than helping it, so this step opts out of the
+    // wider tablet/desktop stage the same way identity-step.tsx does.
+    <div className="flex flex-col gap-3 sm:max-w-md">
       <div>
         <p className="mb-1 font-data text-[11px] font-bold uppercase tracking-[0.1em] text-pink">The important part</p>
         <h1 className="font-display text-xl font-bold text-ink">What do you sell or do?</h1>

@@ -22,7 +22,10 @@ export function IdentityStep({
   const canContinue = businessName.trim().length > 0 && city.trim().length > 0;
 
   return (
-    <div className="flex flex-col gap-4">
+    // Capped narrower than the page's own responsive stage (see app/onboarding/page.tsx) --
+    // two short text inputs don't get more usable by stretching to fill extra tablet/desktop
+    // width, so this step opts out of the wider stage rather than inheriting it.
+    <div className="flex flex-col gap-4 sm:max-w-md">
       <div>
         <p className="mb-1 font-data text-[11px] font-bold uppercase tracking-[0.1em] text-pink">Let&apos;s set up your business</p>
         <h1 className="font-display text-xl font-bold text-ink">About 2 minutes -- let&apos;s start with the basics.</h1>

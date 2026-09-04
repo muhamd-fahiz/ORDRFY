@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { VerticalKey } from "@/lib/design/verticals";
 import { VERTICAL_META } from "@/lib/design/verticals";
-import { detectVertical } from "@/lib/onboarding/detect-vertical";
+import { detectVertical, resolveConfirmCandidates } from "@/lib/onboarding/detect-vertical";
 import { VERTICAL_KNOWLEDGE_BY_KEY } from "@/lib/onboarding/verticals";
 import { getAcknowledgement } from "@/lib/onboarding/acknowledgements";
 import { applyVerticalChange } from "@/lib/onboarding/vertical-change";
@@ -55,7 +55,15 @@ export function OnboardingWizard({ draft }: { draft: OnboardingDraft }) {
   const [city, setCity] = useState(draft.city ?? "");
   const [description, setDescription] = useState(draft.rawBusinessDescription ?? "");
   const [detectedVertical, setDetectedVertical] = useState<VerticalKey | null>(draft.detectedVertical);
-  const [candidates, setCandidates] = useState<VerticalKey[]>([]);
+  // Never persisted -- reconstructed here when resuming directly onto the confirm step, by
+  // re-running the same deterministic detectVertical() against the saved description
+  // (resume-bug fix, found live during the responsive audit pass). detectVertical() is
+  // pure, so re-running it on the same input can never produce a different outcome than
+  // whatever originally put the user on this screen -- there is nothing to persist.
+  const [candidates, setCandidates] = useState<VerticalKey[]>(() => {
+    if (resumeStep(draft) !== "confirm" || !draft.rawBusinessDescription) return [];
+    return resolveConfirmCandidates(detectVertical(draft.rawBusinessDescription));
+  });
 
   const [attributesSelection, setAttributesSelection] = useState<AttributeSelection>(() =>
     toAttributeSelection((draft.structuredAnswers as Record<string, unknown>).attributes),
@@ -198,11 +206,7 @@ export function OnboardingWizard({ draft }: { draft: OnboardingDraft }) {
     }
 
     setNeedsConfirm(true);
-    setCandidates(
-      localResult.candidates.length > 0
-        ? localResult.candidates.map((candidate) => candidate.vertical)
-        : (Object.keys(VERTICAL_META) as VerticalKey[]),
-    );
+    setCandidates(resolveConfirmCandidates(localResult));
     goToStep("confirm");
   }
 

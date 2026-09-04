@@ -73,7 +73,14 @@ export function ReviewStep({
               {businessName} -- {city}
             </p>
           </div>
-          <button type="button" onClick={onEditIdentity} className="font-app text-xs text-pink-strong underline-offset-2 hover:underline">
+          {/* -m-2/p-2 grows the actual tap target (this project's spacing scale: 16px each
+              side, so +32px on both axes) while cancelling out visually -- the "Edit" text
+              stays exactly where it was, only its invisible hit area is bigger. */}
+          <button
+            type="button"
+            onClick={onEditIdentity}
+            className="-m-2 p-2 font-app text-xs text-pink-strong underline-offset-2 hover:underline"
+          >
             Edit
           </button>
         </section>
@@ -84,7 +91,11 @@ export function ReviewStep({
             <p className="font-app text-sm text-ink">{verticalLabel}</p>
             <p className="mt-1 font-app text-sm text-ink-70">{description}</p>
           </div>
-          <button type="button" onClick={onEditDescription} className="font-app text-xs text-pink-strong underline-offset-2 hover:underline">
+          <button
+            type="button"
+            onClick={onEditDescription}
+            className="-m-2 p-2 font-app text-xs text-pink-strong underline-offset-2 hover:underline"
+          >
             Edit
           </button>
         </section>
@@ -111,7 +122,11 @@ export function ReviewStep({
                 </p>
               )}
             </div>
-            <button type="button" onClick={onEditMore} className="font-app text-xs text-pink-strong underline-offset-2 hover:underline">
+            <button
+              type="button"
+              onClick={onEditMore}
+              className="-m-2 p-2 font-app text-xs text-pink-strong underline-offset-2 hover:underline"
+            >
               Edit
             </button>
           </section>

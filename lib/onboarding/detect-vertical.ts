@@ -1,4 +1,4 @@
-import type { VerticalKey } from "@/lib/design/verticals";
+import { VERTICAL_META, type VerticalKey } from "@/lib/design/verticals";
 import { normalizeText } from "./normalize-text";
 import { isCloseMatch } from "./text-similarity";
 import { VERTICAL_KNOWLEDGE_DEFINITIONS } from "./verticals";
@@ -167,4 +167,22 @@ export function detectVertical(rawInput: string): VerticalDetectionResult {
   }
 
   return { status: "confident", vertical: top.vertical, candidates: [top] };
+}
+
+/**
+ * Turns a detection result into the vertical options the confirm/disambiguation screen
+ * should offer -- the one place this mapping lives, shared by both the wizard's "just
+ * detected an ambiguous/unmatched description" path and its "resuming directly onto the
+ * confirm step" path (onboarding-wizard.tsx). Deliberately not part of detectVertical()
+ * itself: this is a presentation-layer question ("what do we show"), not a detection-layer
+ * one ("what did we find"), and detectVertical() stays untouched.
+ */
+export function resolveConfirmCandidates(result: VerticalDetectionResult): VerticalKey[] {
+  if (result.status === "confident" && result.vertical) {
+    return [result.vertical];
+  }
+  if (result.candidates.length > 0) {
+    return result.candidates.map((candidate) => candidate.vertical);
+  }
+  return Object.keys(VERTICAL_META) as VerticalKey[];
 }
