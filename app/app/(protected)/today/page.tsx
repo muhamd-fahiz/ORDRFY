@@ -8,6 +8,7 @@ import { ContactCard } from "@/components/ui/ContactCard";
 import { VerticalBadge } from "@/components/ui/VerticalBadge";
 import type { VerticalKey } from "@/lib/design/verticals";
 import { ContactActions } from "./contact-actions";
+import { TrySampleMessage } from "./try-sample-message";
 
 export default async function TodayPage() {
   const session = await requireReadyOwnerSession();
@@ -28,11 +29,17 @@ export default async function TodayPage() {
       )}
 
       {today.contacts.length === 0 ? (
-        <p className="font-app text-sm text-ink-70">
-          No customer messages yet. New chats from WhatsApp or Instagram will appear here automatically.
-        </p>
+        <div className="flex flex-col gap-3">
+          <p className="font-app text-sm text-ink-70">
+            No customer messages yet. Real chats from WhatsApp or Instagram will show up here once a channel is
+            connected.
+          </p>
+          <p className="font-app text-sm text-ink-70">Want to see how Ordrfy responds first? Try it with a sample message.</p>
+          <TrySampleMessage />
+        </div>
       ) : (
         <div className="flex flex-col gap-2">
+          <TrySampleMessage compact />
           {today.contacts.map((contact) => (
             <ContactCard
               key={contact.id}

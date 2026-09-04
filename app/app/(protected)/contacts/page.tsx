@@ -14,7 +14,8 @@ export default async function ContactsListPage() {
       <h1 className="mb-4 font-display text-xl font-bold text-ink">Customers</h1>
       {data.contacts.length === 0 ? (
         <p className="font-app text-sm text-ink-70">
-          No customers yet. They&apos;ll appear here as soon as someone messages you on WhatsApp or Instagram.
+          No customers yet. Real customers will appear here once WhatsApp or Instagram is connected. You can try a
+          sample message from the Today tab to see how Ordrfy responds in the meantime.
         </p>
       ) : (
         // formatRelativeTime() reads Date.now() -- computed here, once, on the server, and
