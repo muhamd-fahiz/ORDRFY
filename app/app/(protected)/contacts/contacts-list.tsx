@@ -79,6 +79,14 @@ export function ContactsList({ stages, contacts }: ContactsListProps) {
               href={`/app/contacts/${contact.id}`}
               timeLabel={contact.timeLabel}
               message={contact.lastMessage}
+              note={
+                contact.autoReplyText ? (
+                  <>
+                    <span className="font-semibold text-ink-40">Ordrfy replied: </span>
+                    {contact.autoReplyText}
+                  </>
+                ) : undefined
+              }
               stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No status yet"}</Chip>}
             />
           ))}

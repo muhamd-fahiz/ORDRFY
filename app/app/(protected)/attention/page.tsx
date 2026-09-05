@@ -2,6 +2,7 @@ import { requireReadyOwnerSession } from "@/lib/auth/owner-guard";
 import { createRlsClient } from "@/lib/db/server";
 import { getAttentionQueue } from "@/lib/data/attention-queue";
 import { formatRelativeTime } from "@/lib/design/format-time";
+import { describeAttentionReason } from "@/lib/design/attention-reasons";
 import { Chip } from "@/components/ui/Chip";
 import { ContactCard } from "@/components/ui/ContactCard";
 import { ContactActions } from "../today/contact-actions";
@@ -27,6 +28,7 @@ export default async function AttentionPage() {
               href={`/app/contacts/${row.contactId}`}
               timeLabel={formatRelativeTime(row.lastMessageAt)}
               message={row.lastMessage}
+              note={<span className="font-semibold text-attention">{describeAttentionReason(row.reason)}</span>}
               stageChip={<Chip tone="neutral">{row.stageLabel ?? "No status yet"}</Chip>}
               action={<ContactActions contactId={row.contactId} hasUnresolvedAttention />}
             />

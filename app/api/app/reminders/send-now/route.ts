@@ -69,6 +69,27 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Contact not found." }, { status: 404 });
   }
 
+  // "Make Automation Visible" phase: this route only ever sends a payment_due reminder (see
+  // REMINDER_TYPE above), but nothing in the product creates a payments row yet, so nothing
+  // ever gave this a valid context before. The UI trigger for this route has been removed
+  // (app/app/(protected)/today/contact-actions.tsx) -- this guard is defense-in-depth so the
+  // route itself can never send a payment reminder without a real payment behind it, even if
+  // something else calls it again in the future. Does not touch lib/engine/reminders.ts.
+  const { data: eligiblePayment, error: paymentCheckError } = await supabase
+    .from("payments")
+    .select("id")
+    .eq("contact_id", contactId)
+    .eq("business_id", state.businessId)
+    .in("status", ["pending", "overdue"])
+    .limit(1)
+    .maybeSingle();
+  if (paymentCheckError) {
+    return NextResponse.json({ error: paymentCheckError.message }, { status: 500 });
+  }
+  if (!eligiblePayment) {
+    return NextResponse.json({ error: "This customer has no pending payment to remind about." }, { status: 400 });
+  }
+
   const { data: whatsappChannel, error: channelError } = await supabase
     .from("channels")
     .select("id")

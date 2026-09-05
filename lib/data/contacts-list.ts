@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/db/database.types";
+import { findCorrelatedReply, type CorrelatableReply } from "./reply-correlation";
 
 export interface ContactsListStage {
   id: string;
@@ -16,6 +17,9 @@ export interface ContactsListRow {
   /** Every phone number / @handle across this contact's channel identities, for client-side
    *  search only -- never rendered as-is (no masking/redaction applied here). */
   searchText: string;
+  /** The genuine automatic reply Ordrfy sent to `lastMessage`, if any -- see
+   *  lib/data/reply-correlation.ts. */
+  autoReplyText: string | null;
 }
 
 export interface ContactsListData {
@@ -70,20 +74,34 @@ export async function getContactsList(
   const contactIds = (contacts ?? []).map((c) => c.id);
   const safeContactIds = contactIds.length > 0 ? contactIds : ["00000000-0000-0000-0000-000000000000"];
 
-  const [{ data: lastMessages, error: messagesError }, { data: identities, error: identitiesError }] = await Promise.all([
+  const [
+    { data: lastMessages, error: messagesError },
+    { data: identities, error: identitiesError },
+    { data: autoReplies, error: autoRepliesError },
+  ] = await Promise.all([
     supabase
       .from("messages")
-      .select("contact_id, content, created_at")
+      .select("id, contact_id, content, created_at")
       .eq("business_id", businessId)
       .eq("direction", "inbound")
       .in("contact_id", safeContactIds)
       .order("created_at", { ascending: false }),
     supabase.from("contact_channel_identities").select("contact_id, phone_number, display_handle").eq("business_id", businessId).in("contact_id", safeContactIds),
+    // Genuine automatic replies only -- see lib/data/today.ts's identical query for why
+    // is_auto_reply=true is a structural, not conventional, guarantee here.
+    supabase
+      .from("messages")
+      .select("contact_id, content, outbound_idempotency_key")
+      .eq("business_id", businessId)
+      .eq("direction", "outbound")
+      .eq("is_auto_reply", true)
+      .in("contact_id", safeContactIds),
   ]);
   if (messagesError) throw new Error(`Failed to load messages: ${messagesError.message}`);
   if (identitiesError) throw new Error(`Failed to load contact identities: ${identitiesError.message}`);
+  if (autoRepliesError) throw new Error(`Failed to load automatic replies: ${autoRepliesError.message}`);
 
-  const latestMessageByContact = new Map<string, { content: string | null; created_at: string }>();
+  const latestMessageByContact = new Map<string, { id: string; content: string | null; created_at: string }>();
   for (const m of lastMessages ?? []) {
     if (!latestMessageByContact.has(m.contact_id)) latestMessageByContact.set(m.contact_id, m);
   }
@@ -92,6 +110,13 @@ export async function getContactsList(
   for (const identity of identities ?? []) {
     const existing = searchTextByContact.get(identity.contact_id) ?? "";
     searchTextByContact.set(identity.contact_id, `${existing} ${identity.phone_number ?? ""} ${identity.display_handle ?? ""}`);
+  }
+
+  const autoRepliesByContact = new Map<string, CorrelatableReply[]>();
+  for (const r of autoReplies ?? []) {
+    const list = autoRepliesByContact.get(r.contact_id) ?? [];
+    list.push({ content: r.content, outboundIdempotencyKey: r.outbound_idempotency_key });
+    autoRepliesByContact.set(r.contact_id, list);
   }
 
   return {
@@ -106,6 +131,7 @@ export async function getContactsList(
         stageId: c.pipeline_stages?.id ?? null,
         stageLabel: c.pipeline_stages?.stage_label ?? null,
         searchText: `${c.name ?? ""} ${searchTextByContact.get(c.id) ?? ""}`.toLowerCase(),
+        autoReplyText: lastMessage ? findCorrelatedReply(lastMessage.id, autoRepliesByContact.get(c.id) ?? []) : null,
       };
     }),
   };

@@ -47,6 +47,14 @@ export default async function TodayPage() {
               href={`/app/contacts/${contact.id}`}
               timeLabel={formatRelativeTime(contact.lastMessageAt)}
               message={contact.lastMessage}
+              note={
+                contact.autoReplyText ? (
+                  <>
+                    <span className="font-semibold text-ink-40">Ordrfy replied: </span>
+                    {contact.autoReplyText}
+                  </>
+                ) : undefined
+              }
               stageChip={<Chip tone="neutral">{contact.stageLabel ?? "No status yet"}</Chip>}
               action={
                 <ContactActions contactId={contact.id} hasUnresolvedAttention={contact.hasUnresolvedAttention} />
