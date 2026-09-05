@@ -532,24 +532,43 @@ async function sendAutoReply(
     .select("id, send_status")
     .eq("outbound_idempotency_key", idempotencyKey)
     .maybeSingle();
-  if (existing) return; // already attempted (sent or pending_send) -- never double-send
 
-  const { data: pendingRow, error: pendingError } = await supabase
-    .from("messages")
-    .insert({
-      contact_id: contactId,
-      business_id: businessId,
-      channel_id: channelRow!.id,
-      direction: "outbound",
-      content: replyText,
-      is_auto_reply: true,
-      provider: normalized.channel === "whatsapp" ? "mock-whatsapp" : "mock-instagram",
-      outbound_idempotency_key: idempotencyKey,
-      send_status: "pending_send",
-    })
-    .select("id")
-    .single();
-  if (pendingError) throw new Error(`Failed to record pending auto-reply: ${pendingError.message}`);
+  // Pre-Phase 7 correctness remediation (Finding 2): a row already at send_status='sent' is
+  // a true no-op -- never re-send. A row still at 'pending_send' means an earlier attempt
+  // was interrupted before confirming success (the provider call itself threw, or the
+  // process crashed) -- that must be retried, not treated as proof the reply already went
+  // out. The prior version returned early for either status, so any provider failure
+  // silently and permanently suppressed the reply: webhook recovery would reprocess the
+  // inbound message, reach this exact idempotency key again, see the existing row, and stop
+  // -- without ever calling the provider a second time. Retrying via the SAME row (never a
+  // second insert) keeps exactly one messages row per idempotency key, so duplicate-send
+  // prevention is unchanged; safety against two concurrent retries is provided one layer up,
+  // by claimMessageForProcessing()'s atomic claim and claim_stuck_webhook_event()'s
+  // FOR UPDATE SKIP LOCKED, both already in place before this function is ever re-entered.
+  if (existing?.send_status === "sent") return;
+
+  let outboundRowId: string;
+  if (existing) {
+    outboundRowId = existing.id;
+  } else {
+    const { data: pendingRow, error: pendingError } = await supabase
+      .from("messages")
+      .insert({
+        contact_id: contactId,
+        business_id: businessId,
+        channel_id: channelRow!.id,
+        direction: "outbound",
+        content: replyText,
+        is_auto_reply: true,
+        provider: normalized.channel === "whatsapp" ? "mock-whatsapp" : "mock-instagram",
+        outbound_idempotency_key: idempotencyKey,
+        send_status: "pending_send",
+      })
+      .select("id")
+      .single();
+    if (pendingError) throw new Error(`Failed to record pending auto-reply: ${pendingError.message}`);
+    outboundRowId = pendingRow.id;
+  }
 
   const channelProvider = getChannelProvider(normalized.channel);
   const providerMessageId = await channelProvider.sendMessage(normalized.providerUserId, { text: replyText });
@@ -557,7 +576,7 @@ async function sendAutoReply(
   await supabase
     .from("messages")
     .update({ send_status: "sent", provider_message_id: providerMessageId })
-    .eq("id", pendingRow.id);
+    .eq("id", outboundRowId);
 
   await logActivity(supabase, businessId, contactId, "auto_reply_sent", { rule_id: matchedRuleId });
 }

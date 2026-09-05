@@ -87,14 +87,17 @@ export async function getContactsList(
       .in("contact_id", safeContactIds)
       .order("created_at", { ascending: false }),
     supabase.from("contact_channel_identities").select("contact_id, phone_number, display_handle").eq("business_id", businessId).in("contact_id", safeContactIds),
-    // Genuine automatic replies only -- see lib/data/today.ts's identical query for why
-    // is_auto_reply=true is a structural, not conventional, guarantee here.
+    // Genuine, CONFIRMED-SENT automatic replies only -- see lib/data/today.ts's identical
+    // query for why is_auto_reply=true is a structural, not conventional, guarantee here,
+    // and why send_status='sent' is required too (Pre-Phase 7 correctness remediation,
+    // Finding 2 -- a 'pending_send' row must never render as "Ordrfy replied").
     supabase
       .from("messages")
-      .select("contact_id, content, outbound_idempotency_key")
+      .select("contact_id, content, outbound_idempotency_key, send_status")
       .eq("business_id", businessId)
       .eq("direction", "outbound")
       .eq("is_auto_reply", true)
+      .eq("send_status", "sent")
       .in("contact_id", safeContactIds),
   ]);
   if (messagesError) throw new Error(`Failed to load messages: ${messagesError.message}`);
@@ -115,7 +118,7 @@ export async function getContactsList(
   const autoRepliesByContact = new Map<string, CorrelatableReply[]>();
   for (const r of autoReplies ?? []) {
     const list = autoRepliesByContact.get(r.contact_id) ?? [];
-    list.push({ content: r.content, outboundIdempotencyKey: r.outbound_idempotency_key });
+    list.push({ content: r.content, outboundIdempotencyKey: r.outbound_idempotency_key, sendStatus: r.send_status });
     autoRepliesByContact.set(r.contact_id, list);
   }
 

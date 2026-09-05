@@ -72,16 +72,20 @@ export async function getTodayViewData(
       .eq("business_id", businessId)
       .is("resolved_at", null)
       .not("contact_id", "is", null),
-    // Genuine automatic replies only -- is_auto_reply is set nowhere else in the codebase
-    // besides sendAutoReply() (lib/engine/automation.ts), never by a manual owner reply, a
-    // reminder send, or any other outbound message. See reply-correlation.ts for how a
-    // specific reply is matched back to the exact inbound message that produced it.
+    // Genuine, CONFIRMED-SENT automatic replies only -- is_auto_reply is set nowhere else in
+    // the codebase besides sendAutoReply() (lib/engine/automation.ts), never by a manual
+    // owner reply, a reminder send, or any other outbound message. send_status='sent' is
+    // required too: a row can be left at 'pending_send' if the provider call failed (Finding
+    // 2, Pre-Phase 7 correctness remediation) -- that must never render as "Ordrfy replied."
+    // See reply-correlation.ts for how a specific reply is matched back to the exact inbound
+    // message that produced it.
     supabase
       .from("messages")
-      .select("contact_id, content, outbound_idempotency_key")
+      .select("contact_id, content, outbound_idempotency_key, send_status")
       .eq("business_id", businessId)
       .eq("direction", "outbound")
       .eq("is_auto_reply", true)
+      .eq("send_status", "sent")
       .in("contact_id", safeContactIds),
   ]);
   if (messagesError) throw new Error(`Failed to load messages: ${messagesError.message}`);
@@ -98,7 +102,7 @@ export async function getTodayViewData(
   const autoRepliesByContact = new Map<string, CorrelatableReply[]>();
   for (const r of autoReplies ?? []) {
     const list = autoRepliesByContact.get(r.contact_id) ?? [];
-    list.push({ content: r.content, outboundIdempotencyKey: r.outbound_idempotency_key });
+    list.push({ content: r.content, outboundIdempotencyKey: r.outbound_idempotency_key, sendStatus: r.send_status });
     autoRepliesByContact.set(r.contact_id, list);
   }
 

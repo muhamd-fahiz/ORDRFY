@@ -22,6 +22,21 @@ export interface MockWhatsAppWebhookPayload {
   providerMessageId?: string;
 }
 
+// Test-only failure simulation, keyed by recipient (the `to` phone number sendMessage()
+// receives) rather than by content -- unlike lib/ai/mock.ts's content-keyed SIMULATE_AI_ERROR
+// markers, outbound content here is fixed seed data (internal_reply_rules.reply_text), not
+// something a test controls directly. Exists purely so Finding 2 (Pre-Phase 7 correctness
+// remediation: a provider failure could leave an outbound reply permanently stuck at
+// send_status='pending_send') is verifiable at all -- sendMessage() otherwise never throws
+// under any real product code path today. Never called by product code, only by verification
+// scripts.
+const sendFailuresRemaining = new Map<string, number>();
+
+/** Makes the next `times` sendMessage() calls to `to` throw before succeeding normally. Test-only. */
+export function simulateSendFailuresFor(to: string, times = 1): void {
+  sendFailuresRemaining.set(to, times);
+}
+
 export class MockWhatsAppProvider implements MessagingChannelProvider {
   readonly channel = "whatsapp" as const;
 
@@ -48,6 +63,12 @@ export class MockWhatsAppProvider implements MessagingChannelProvider {
   }
 
   async sendMessage(to: string, content: OutboundContent): Promise<ProviderMessageId> {
+    const remainingFailures = sendFailuresRemaining.get(to);
+    if (remainingFailures && remainingFailures > 0) {
+      sendFailuresRemaining.set(to, remainingFailures - 1);
+      throw new Error(`MockWhatsAppProvider: simulated send failure (recipient=${to})`);
+    }
+
     const providerMessageId = `mock-wa-out-${crypto.randomUUID()}`;
     // In place of a real API call: this would be persisted via the caller's messages
     // insert (send_status='sent', provider='mock', provider_message_id=<this id>).
